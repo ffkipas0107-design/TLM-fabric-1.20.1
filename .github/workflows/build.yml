@@ -1,4 +1,4 @@
-name: Build TouhouLittleMaid LITE - Auto Fix
+name: Build TouhouLittleMaid LITE - RAM 2GB
 
 on:
   push:
@@ -22,30 +22,77 @@ jobs:
         cp -r extracted/TouhouLittleMaid-Orihime-1.20.1/* .
         echo "✅ Done"
 
-    - name: 🔧 Auto-Fix Missing Dependencies
+    - name: 🔧 Create LITE build.gradle (Remove Heavy Mods)
       run: |
-        echo "🛠️ Commenting problematic dependencies..."
-        
-        # Comment modImplementation yang bermasalah
-        sed -i 's/^\s*modImplementation "libs:/\/\/ modImplementation "libs:/g' build.gradle
-        sed -i 's/^\s*modImplementation("libs:/\/\/ modImplementation("libs:/g' build.gradle
-        
-        # Tapi keep fabric API dan core
-        sed -i 's/\/\/ modImplementation "net.fabricmc.fabric-api/modImplementation "net.fabricmc.fabric-api/g' build.gradle
-        sed -i 's/\/\/ modImplementation("net.fabricmc/modImplementation("net.fabricmc/g' build.gradle
-        
-        echo "📝 Modified build.gradle (sample):"
-        grep -i "modImplementation\|modCompile" build.gradle | head -15 || echo "None"
+        echo "Creating LITE version..."
+        cat > build.gradle << 'GRADLE_EOF'
+plugins {
+  id 'fabric-loom' version '1.10.5'
+  id 'maven-publish'
+}
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+archivesBaseName = project.archives_base_name
+version = project.mod_version
+group = project.maven_group
+
+repositories {
+  mavenCentral()
+  maven { url "https://maven.fabricmc.net/" }
+  maven { url "https://maven.modmuss50.me/" }
+}
+
+dependencies {
+  minecraft "com.mojang:minecraft:${project.minecraft_version}"
+  mappings loom.officialMojangMappings()
+  modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+  modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}
+
+tasks.withType(JavaCompile).configureEach {
+  it.options.release = 17
+}
+
+jar {
+  from "LICENSE"
+  classifier = "dev"
+}
+
+sourcesJar {
+  from "LICENSE"
+}
+
+remapJar {
+  injectAccessWidener = true
+  remapperArgs = [
+    "-ext", "quilt"
+  ]
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      from components.java
+    }
+  }
+
+  repositories {
+    mavenLocal()
+  }
+}
+GRADLE_EOF
+        echo "✅ LITE build.gradle created"
 
     - name: Setup Gradle
       run: |
         mkdir -p ~/.gradle
         cat >> ~/.gradle/gradle.properties << 'EOF'
-        org.gradle.jvmargs=-Xmx4g
-        org.gradle.internal.http.socketTimeout=180000
-        org.gradle.internal.http.connectionTimeout=180000
+        org.gradle.jvmargs=-Xmx3g
+        org.gradle.internal.http.socketTimeout=120000
+        org.gradle.internal.http.connectionTimeout=120000
         org.gradle.parallel=true
-        org.gradle.caching=true
         EOF
         chmod +x ./gradlew
 
@@ -56,34 +103,36 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    - name: 🚀 Build
-      run: |
-        echo "Building..."
-        ./gradlew build -x test --parallel --info 2>&1 | tail -100
+    - name: 🚀 Build LITE
+      run: ./gradlew build -x test --parallel
 
-    - name: 🔍 Find JAR
+    - name: 📦 Find JAR
       run: |
-        echo "Searching for JAR files..."
         mkdir -p output
-        
-        # Find all JAR
-        find . -name "*TouhouLittleMaid*.jar" -o -name "*maid*.jar" 2>/dev/null | grep -v "sources\|dev" > jar_list.txt
-        cat jar_list.txt || echo "No TouhouLittleMaid JAR found"
-        
-        # Fallback: copy semua dari build/libs
-        find build/libs -name "*.jar" ! -name "*sources*" ! -name "*dev*" -exec cp {} output/ \; 2>/dev/null
-        
-        echo "📦 Output:"
-        ls -lah output/ || echo "Empty"
+        find build/libs -name "*.jar" ! -name "*sources*" ! -name "*dev*" -exec cp {} output/ \;
+        echo "JAR created:"
+        ls -lah output/
 
-    - name: 🎉 Upload Releases
+    - name: 🎉 Upload Release
       if: success()
       uses: softprops/action-gh-release@v2
       with:
         files: output/*.jar
-        tag_name: "v${{ github.run_number }}"
-        name: "TouhouLittleMaid LITE #${{ github.run_number }}"
-        body: "✅ Berhasil! JAR siap untuk Minecraft 1.20.1 Fabric"
+        tag_name: "v-lite-${{ github.run_number }}"
+        name: "TouhouLittleMaid LITE v${{ github.run_number }} (RAM 2GB)"
+        body: |
+          ✅ **TouhouLittleMaid LITE - Optimized untuk RAM 2GB!**
+          
+          🎉 **Hanya TouhouLittleMaid + Fabric API**
+          ✅ TACZ, SlashBlade, FarmersDelight = DIHAPUS
+          ✅ Super LITE, cocok untuk HP Oppo A3S
+          
+          📱 **Cara pakai:**
+          1. Download JAR
+          2. Masukkan ke folder mods (Fabric 1.20.1)
+          3. Done! 🚀
+        draft: false
+        prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -91,5 +140,5 @@ jobs:
       if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: TouhouLittleMaid-LITE
+        name: TouhouLittleMaid-LITE-RAM2GB
         path: output/*.jar
