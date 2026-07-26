@@ -22,14 +22,17 @@ jobs:
         cp -r extracted/TouhouLittleMaid-Orihime-1.20.1/* .
         echo "✅ Done"
 
-    - name: 🔧 Remove Heavy Dependencies from build.gradle
+    - name: 🔧 Remove Heavy Dependencies & Fix Conflicts in build.gradle
       run: |
-        echo "🛠️ Removing TACZ, SlashBlade, dll..."
+        echo "🛠️ Removing TACZ, SlashBlade, & Architectury-API conflicts..."
         # Comment semua modImplementation "libs:..."
         sed -i 's/modImplementation "libs:/\/\/ LITE: modImplementation "libs:/g' build.gradle
         sed -i 's/modImplementation("libs:/\/\/ LITE: modImplementation("libs:/g' build.gradle
         
-        echo "✅ Dependencies removed"
+        # Comment baris architectury-api untuk mencegah duplicate class error
+        sed -i '/architectury-api/s/^/\/\//g' build.gradle
+        
+        echo "✅ Dependencies removed & fixed"
         echo ""
         echo "Sample build.gradle:"
         grep -i "modImplementation" build.gradle | head -10
@@ -74,7 +77,7 @@ jobs:
           
           🎉 Hanya TouhouLittleMaid + Fabric API
           ✅ TACZ, SlashBlade, FarmersDelight = DIHAPUS
-          ✅ Super LITE & berat
+          ✅ Super LITE & ringan
           
           📱 Cocok untuk Oppo A3S!
         draft: false
