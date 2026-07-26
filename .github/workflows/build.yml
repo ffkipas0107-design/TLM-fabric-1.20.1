@@ -22,69 +22,6 @@ jobs:
         cp -r extracted/TouhouLittleMaid-Orihime-1.20.1/* .
         echo "✅ Done"
 
-    - name: 🔧 Create LITE build.gradle (Remove Heavy Mods)
-      run: |
-        echo "Creating LITE version..."
-        cat > build.gradle << 'GRADLE_EOF'
-plugins {
-  id 'fabric-loom' version '1.10.5'
-  id 'maven-publish'
-}
-
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
-archivesBaseName = project.archives_base_name
-version = project.mod_version
-group = project.maven_group
-
-repositories {
-  mavenCentral()
-  maven { url "https://maven.fabricmc.net/" }
-  maven { url "https://maven.modmuss50.me/" }
-}
-
-dependencies {
-  minecraft "com.mojang:minecraft:${project.minecraft_version}"
-  mappings loom.officialMojangMappings()
-  modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-  modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-}
-
-tasks.withType(JavaCompile).configureEach {
-  it.options.release = 17
-}
-
-jar {
-  from "LICENSE"
-  classifier = "dev"
-}
-
-sourcesJar {
-  from "LICENSE"
-}
-
-remapJar {
-  injectAccessWidener = true
-  remapperArgs = [
-    "-ext", "quilt"
-  ]
-}
-
-publishing {
-  publications {
-    mavenJava(MavenPublication) {
-      from components.java
-    }
-  }
-
-  repositories {
-    mavenLocal()
-  }
-}
-GRADLE_EOF
-        echo "✅ LITE build.gradle created"
-
     - name: Setup Gradle
       run: |
         mkdir -p ~/.gradle
@@ -119,18 +56,8 @@ GRADLE_EOF
       with:
         files: output/*.jar
         tag_name: "v-lite-${{ github.run_number }}"
-        name: "TouhouLittleMaid LITE v${{ github.run_number }} (RAM 2GB)"
-        body: |
-          ✅ **TouhouLittleMaid LITE - Optimized untuk RAM 2GB!**
-          
-          🎉 **Hanya TouhouLittleMaid + Fabric API**
-          ✅ TACZ, SlashBlade, FarmersDelight = DIHAPUS
-          ✅ Super LITE, cocok untuk HP Oppo A3S
-          
-          📱 **Cara pakai:**
-          1. Download JAR
-          2. Masukkan ke folder mods (Fabric 1.20.1)
-          3. Done! 🚀
+        name: "TouhouLittleMaid LITE v${{ github.run_number }}"
+        body: "✅ TouhouLittleMaid LITE - Cocok untuk RAM 2GB! Hanya maid doang 🎉"
         draft: false
         prerelease: false
       env:
@@ -140,5 +67,5 @@ GRADLE_EOF
       if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: TouhouLittleMaid-LITE-RAM2GB
+        name: TouhouLittleMaid-LITE
         path: output/*.jar
