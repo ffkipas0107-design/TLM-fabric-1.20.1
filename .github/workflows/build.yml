@@ -1,54 +1,38 @@
-name: Extract & Release TouhouLittleMaid LITE
+name: Debug - List ZIP Contents
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  build:
+  debug:
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v4
 
-    - name: Extract JAR dari ZIP
+    - name: Lihat Struktur ZIP
       run: |
-        echo "Extracting TouhouLittleMaid-Orihime-1.20.1.zip..."
-        unzip -q TouhouLittleMaid-Orihime-1.20.1.zip -d extracted/
-        
-        mkdir -p output
-        
-        # Cari JAR di dalam extracted folder
-        find extracted -name "*.jar" -type f | while read jar; do
-          echo "Found JAR: $jar"
-          cp "$jar" output/
-        done
+        echo "=== ZIP File Info ==="
+        ls -lh TouhouLittleMaid-Orihime-1.20.1.zip
         
         echo ""
-        echo "=== JAR Files ==="
-        ls -lah output/
-
-    - name: Upload Releases
-      if: success()
-      uses: softprops/action-gh-release@v2
-      with:
-        files: output/*.jar
-        tag_name: "v1.0-${{ github.run_number }}"
-        name: "TouhouLittleMaid LITE #${{ github.run_number }}"
-        body: "🎉 TouhouLittleMaid siap pakai untuk Minecraft 1.20.1 Fabric!"
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload JAR as Artifact
-      if: success()
-      uses: actions/upload-artifact@v4
-      with:
-        name: TouhouLittleMaid-LITE-JAR
-        path: output/*.jar
-        retention-days: 30
+        echo "=== Unzip & List Semua File ==="
+        unzip -l TouhouLittleMaid-Orihime-1.20.1.zip | head -100
+        
+        echo ""
+        echo "=== Extract ==="
+        unzip -q TouhouLittleMaid-Orihime-1.20.1.zip -d extracted/
+        
+        echo ""
+        echo "=== Struktur Folder ==="
+        find extracted -type f -name "*.jar" -o -name "build.gradle" -o -name "*.md" | sort
+        
+        echo ""
+        echo "=== Folder Utama ==="
+        ls -la extracted/
+        
+        echo ""
+        echo "=== Cari semua .jar file ==="
+        find extracted -name "*.jar" -type f -exec ls -lh {} \;
