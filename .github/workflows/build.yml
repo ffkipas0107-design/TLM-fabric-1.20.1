@@ -1,0 +1,35 @@
+name: Build Mod Langsung Jar
+on: [push, workflow_dispatch]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ambil Data Mod
+        uses: actions/checkout@v4
+
+      - name: Siapkan Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Siapkan Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Mulai Nge-Build (.jar)
+        run: |
+          chmod +x ./gradlew
+          ./gradlew build
+
+      - name: Upload Langsung Jadi File .jar (Tanpa Zip)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "build-${{ github.run_number }}"
+          name: "Hasil Build Mod Siap Pakai (#${{ github.run_number }})"
+          files: build/libs/*.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
