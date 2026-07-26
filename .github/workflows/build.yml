@@ -1,38 +1,88 @@
-name: Debug - List ZIP Contents
+name: Build TouhouLittleMaid LITE
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  debug:
+  build:
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v4
 
-    - name: Lihat Struktur ZIP
+    - name: Extract Source Code
       run: |
-        echo "=== ZIP File Info ==="
-        ls -lh TouhouLittleMaid-Orihime-1.20.1.zip
-        
-        echo ""
-        echo "=== Unzip & List Semua File ==="
-        unzip -l TouhouLittleMaid-Orihime-1.20.1.zip | head -100
-        
-        echo ""
-        echo "=== Extract ==="
+        echo "Extracting TouhouLittleMaid..."
         unzip -q TouhouLittleMaid-Orihime-1.20.1.zip -d extracted/
+        cp -r extracted/TouhouLittleMaid-Orihime-1.20.1/* .
+        ls -la src/ 2>/dev/null || echo "src folder found"
+
+    - name: Setup Gradle
+      run: |
+        mkdir -p ~/.gradle
+        cat >> ~/.gradle/gradle.properties << 'EOF'
+        org.gradle.jvmargs=-Xmx4g
+        org.gradle.internal.http.socketTimeout=180000
+        org.gradle.internal.http.connectionTimeout=180000
+        org.gradle.parallel=true
+        org.gradle.caching=true
+        EOF
+        chmod +x ./gradlew
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Build with Retry (3 attempts)
+      run: |
+        for i in {1..3}; do
+          echo "Build attempt $i/3..."
+          if ./gradlew build -x test --parallel; then
+            echo "✅ Build successful!"
+            exit 0
+          else
+            echo "⚠️ Build failed, retrying in 30s..."
+            sleep 30
+          fi
+        done
+        echo "❌ Build failed after 3 attempts"
+        exit 1
+
+    - name: Find & Upload JAR
+      if: success()
+      run: |
+        mkdir -p output
+        find build/libs -name "*.jar" ! -name "*sources*" ! -name "*dev*" -exec cp {} output/ \;
+        ls -lah output/
         
-        echo ""
-        echo "=== Struktur Folder ==="
-        find extracted -type f -name "*.jar" -o -name "build.gradle" -o -name "*.md" | sort
-        
-        echo ""
-        echo "=== Folder Utama ==="
-        ls -la extracted/
-        
-        echo ""
-        echo "=== Cari semua .jar file ==="
-        find extracted -name "*.jar" -type f -exec ls -lh {} \;
+        if [ ! -f output/*.jar ]; then
+          echo "❌ No JAR found!"
+          find . -name "*.jar" -type f 2>/dev/null | head -10
+          exit 1
+        fi
+
+    - name: Upload to Releases
+      if: success()
+      uses: softprops/action-gh-release@v2
+      with:
+        files: output/*.jar
+        tag_name: "v1.0-${{ github.run_number }}"
+        name: "TouhouLittleMaid LITE #${{ github.run_number }}"
+        body: "🎉 JAR siap pakai untuk Minecraft 1.20.1 Fabric!"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Artifacts
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: TouhouLittleMaid-LITE-JAR
+        path: output/*.jar
