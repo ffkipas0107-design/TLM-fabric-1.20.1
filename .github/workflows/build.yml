@@ -1,9 +1,121 @@
-- name: Upload JAR ke Releases
-  if: success()
-  uses: softprops/action-gh-release@v2
-  with:
-    files: |
-      extracted/*/build/libs/*.jar
-      build/libs/*.jar
-    tag_name: "v1.0-${{ github.run_number }}"
+name: Build TouhouLittleMaid LITE - Optimized
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
     
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Extract Source Code
+      run: |
+        echo "Extracting source code..."
+        if [ -f "TouhouLittleMaid-Orihime-1.20.1.zip" ]; then
+          unzip -q TouhouLittleMaid-Orihime-1.20.1.zip -d extracted/
+          
+          for dir in extracted/*/; do
+            if [ -d "$dir/src" ] || [ -f "$dir/build.gradle" ]; then
+              echo "Found source in: $dir"
+              cp -r "$dir"/* .
+              break
+            fi
+          done
+          
+          echo "Source extracted successfully"
+          ls -la
+        else
+          echo "ERROR: File TouhouLittleMaid-Orihime-1.20.1.zip tidak ditemukan!"
+          exit 1
+        fi
+
+    - name: Trik Optimasi LITE (Compile-Only untuk Mod Berat)
+      run: |
+        echo "Mengubah mod berat menjadi Compile-Only..."
+        
+        if [ -f "build.gradle" ]; then
+          sed -i 's/modImplementation("vectorwing:FarmersDelight/modCompileOnly("vectorwing:FarmersDelight/g' build.gradle
+          sed -i 's/modImplementation "libs:TACZ/modCompileOnly "libs:TACZ/g' build.gradle
+          sed -i 's/modImplementation "net.conczin:immersive_melodies/modCompileOnly "net.conczin:immersive_melodies/g' build.gradle
+          sed -i 's/modImplementation("maven.modrinth:travelersbackpack/modCompileOnly("maven.modrinth:travelersbackpack/g' build.gradle
+          
+          echo "✅ Optimasi selesai!"
+        fi
+
+    - name: Setup Gradle & Configure Timeouts
+      run: |
+        mkdir -p ~/.gradle
+        cat >> ~/.gradle/gradle.properties << 'EOF'
+        org.gradle.jvmargs=-Xmx3g
+        org.gradle.internal.http.socketTimeout=120000
+        org.gradle.internal.http.connectionTimeout=120000
+        org.gradle.parallel=true
+        org.gradle.caching=true
+        EOF
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Grant execute permission to gradlew
+      run: chmod +x ./gradlew
+
+    - name: Build Project (Generate JAR)
+      run: |
+        echo "Starting build process..."
+        ./gradlew build -x test --parallel 2>&1 | tee build.log
+        
+        echo ""
+        echo "=== Build Completed ==="
+        find . -name "*.jar" -type f 2>/dev/null | grep -E "(build|libs)" | head -20
+
+    - name: Collect JAR Files to Output
+      if: success()
+      run: |
+        mkdir -p output
+        
+        if [ -d "build/libs" ]; then
+          cp -v build/libs/*.jar output/ 2>/dev/null || true
+        fi
+        
+        find extracted -name "*.jar" -type f 2>/dev/null | xargs -I {} cp -v {} output/ || true
+        
+        echo "=== Final JAR Files ==="
+        ls -lah output/
+        
+        COUNT=$(find output -name "*.jar" -type f 2>/dev/null | wc -l)
+        if [ $COUNT -eq 0 ]; then
+          echo "❌ No JAR files generated!"
+          exit 1
+        fi
+
+    - name: Create Release & Upload JAR
+      if: success()
+      uses: softprops/action-gh-release@v2
+      with:
+        files: output/*.jar
+        tag_name: "v1.0-lite-${{ github.run_number }}"
+        name: "TouhouLittleMaid LITE #${{ github.run_number }}"
+        body: "✅ Build berhasil! JAR siap dipakai untuk Minecraft 1.20.1"
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload JAR as Artifact
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: TouhouLittleMaid-LITE-JAR
+        path: output/*.jar
+        retention-days: 30
