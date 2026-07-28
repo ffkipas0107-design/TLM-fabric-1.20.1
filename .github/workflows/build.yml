@@ -90,9 +90,11 @@ jobs:
           name: mod-artifacts-java-${{ matrix.java-version }}
           path: |
             build/libs/*.jar
-            */build/libs/*.jar
+            common/build/libs/*.jar
+            fabric/build/libs/*.jar
+            forge/build/libs/*.jar
             !**/transform_cache/*
-          if-no-files-found: ignore
+          if-no-files-found: warn
           retention-days: 14
 
   test-reporting:
