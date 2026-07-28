@@ -1,0 +1,48 @@
+mkdir -p .github/workflows && cat << 'EOF' > .github/workflows/build.yml
+name: Fabric Mod Advanced Build
+
+on:
+  push:
+    branches:
+      - '**' # Berjalan di semua branch, termasuk branch 1.21.11Fabric Anda
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Java 21 (Minecraft 1.21.x Standard)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft' # Pilihan terbaik untuk performa build Minecraft
+          java-version: '21'
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Setup Gradle Cache
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
+
+      - name: Grant Execute Permission for Gradle Wrapper
+        run: chmod +x gradlew
+
+      - name: Clear Corrupted Loom Caches
+        run: rm -rf .gradle/loom-cache
+
+      - name: Run Production Build
+        run: ./gradlew clean build --no-daemon --stacktrace --refresh-dependencies
+
+      - name: Capture and Upload Mod Artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Fabric-Mod-Builds
+          path: build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 7
+EOF
