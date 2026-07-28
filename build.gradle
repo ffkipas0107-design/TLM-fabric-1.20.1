@@ -1,6 +1,6 @@
 plugins {
-    // Dinaikkan ke versi paling baru yang kompatibel dengan Gradle 8.12+ 
-    id 'dev.architectury.loom' version '1.9-SNAPSHOT' apply false
+    // Ubah dari '1.9-SNAPSHOT' menjadi '1.13.467' agar sesuai tuntutan error
+    id 'dev.architectury.loom' version '1.13.467' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
