@@ -73,16 +73,16 @@ subprojects {
             }
         }
 
-        // Ladysnake Maven
+        // Ladysnake Maven (BENAR)
         maven {
             name = "Ladysnake"
-            url = "https://maven.ladysnake.org"
+            url = "https://maven.ladysnake.org/releases"
         }
 
-        // TerraformersMC Maven
+        // TerraformersMC Maven (BENAR)
         maven {
             name = "TerraformersMC"
-            url = "https://maven.terraformersmc.com/"
+            url = "https://maven.terraformersmc.com/releases"
             content {
                 includeGroup "com.terraformersmc"
             }
