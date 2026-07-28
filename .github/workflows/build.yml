@@ -1,48 +1,148 @@
-mkdir -p .github/workflows && cat << 'EOF' > .github/workflows/build.yml
-name: Fabric Mod Advanced Build
+name: Advanced Multiloader Mod Build & Release
 
 on:
   push:
-    branches:
-      - '**' # Berjalan di semua branch, termasuk branch 1.21.11Fabric Anda
+    branches: [ "main", "master", "1.20.x", "1.21.x" ]
+    tags: [ "v*" ]
   pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Type of manual build (alpha, beta, release)'
+        required: true
+        default: 'alpha'
+        type: choice
+        options:
+          - alpha
+          - beta
+          - release
+
+permissions:
+  contents: write
+  pull-requests: read
+  checks: write
 
 jobs:
+  validation:
+    name: Validate Gradle & Repo Structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v2
+
   build:
+    name: Build Mod (${{ matrix.loader }} - Java ${{ matrix.java-version }})
+    needs: validation
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - loader: "fabric"
+            java-version: 17
+            mc-version: "1.20.1"
+          - loader: "fabric"
+            java-version: 21
+            mc-version: "1.21.1"
+          - loader: "neoforge"
+            java-version: 21
+            mc-version: "1.21.1"
+      fail-fast: false
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java Development Kit ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x ./gradlew
+
+      - name: Run Build & Verification
+        run: ./gradlew :${{ matrix.loader }}:build --stacktrace --no-daemon
+        env:
+          MC_VERSION: ${{ matrix.mc-version }}
+
+      - name: Capture Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mod-Artifacts-${{ matrix.loader }}-${{ matrix.mc-version }}
+          path: |
+            ${{ matrix.loader }}/build/libs/*-dev.jar
+            ${{ matrix.loader }}/build/libs/*-sources.jar
+            ${{ matrix.loader }}/build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 14
+
+  test-and-lint:
+    name: Automated Testing & Checkstyle
+    needs: validation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set Up Java 21 (Minecraft 1.21.x Standard)
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'microsoft' # Pilihan terbaik untuk performa build Minecraft
-          java-version: '21'
+          distribution: 'temurin'
+          java-version: 21
 
-      - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@v4
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
-      - name: Setup Gradle Cache
-        uses: gradle/actions/setup-gradle@v4
+      - name: Run Tests and Checkstyle
+        run: ./gradlew check --continue
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
         with:
-          gradle-home-cache-cleanup: true
+          files: "**/build/test-results/**/*.xml"
 
-      - name: Grant Execute Permission for Gradle Wrapper
-        run: chmod +x gradlew
+  release:
+    name: Create GitHub Release
+    needs: [build, test-and-lint]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: Clear Corrupted Loom Caches
-        run: rm -rf .gradle/loom-cache
-
-      - name: Run Production Build
-        run: ./gradlew clean build --no-daemon --stacktrace --refresh-dependencies
-
-      - name: Capture and Upload Mod Artifacts
-        if: success()
-        uses: actions/upload-artifact@v4
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: Fabric-Mod-Builds
-          path: build/libs/*.jar
-          if-no-files-found: error
-          retention-days: 7
-EOF
+          path: ./dist
+          merge-multiple: true
+
+      - name: Display Downloaded Artifacts
+        run: ls -lh ./dist
+
+      - name: Generate Release Notes from Git History
+        id: release_notes
+        run: |
+          echo "PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo '')" >> $GITHUB_ENV
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./dist/*.jar
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
