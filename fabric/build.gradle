@@ -48,7 +48,7 @@ dependencies {
     implementation "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
     include "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
 
-    modCompileOnly "maven.modrinth:iris:1.8.8+1.21.1-fabric"
+    modCompileOnly "maven.modrinth:iris:1.8.8+1.21.11-fabric"
     modCompileOnly "com.terraformersmc:modmenu:$rootProject.modmenu_version"
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
@@ -73,5 +73,5 @@ shadowJar {
 
 remapJar {
     input.set shadowJar.archiveFile
-    archiveFileName = "fox-model-loader-${project.version}-fa1.21.1.jar"
+    archiveFileName = "fox-model-loader-${project.version}-fa1.21.11.jar"
 }
