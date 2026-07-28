@@ -25,23 +25,36 @@ subprojects {
     }
 
     repositories {
+        mavenCentral()
+
         flatDir {
             dirs rootProject.file('libs')
         }
+
+        // Repositori Resmi Fabric
+        maven {
+            name = "Fabric"
+            url = "https://maven.fabricmc.net/"
+        }
+
+        // Modrinth Maven (PERBAIKAN UTAMA)
         maven {
             name = "Modrinth"
-            url = "https://modrinth.com"
+            url = "https://api.modrinth.com/maven"
             content {
                 includeGroup "maven.modrinth"
             }
         }
+
+        // Architectury Maven (DIPERBAIKI)
         maven {
             name = "Architectury"
-            url = "https://architectury.dev"
+            url = "https://maven.architectury.dev/"
             content {
                 includeGroup "dev.architectury"
             }
         }
+
         maven {
             name = "JitPack"
             url = "https://jitpack.io"
@@ -50,33 +63,41 @@ subprojects {
                 includeGroup "com.github.TartaricAlkaline"
             }
         }
+
+        // SpongePowered Maven (DIPERBAIKI)
         maven {
             name = "Sponge"
-            url = "https://spongepowered.org"
+            url = "https://repo.spongepowered.org/repository/maven-public/"
             content {
                 includeGroup "org.spongepowered"
             }
         }
+
+        // Ladysnake Maven (DIPERBAIKI)
         maven {
             name = "Ladysnake"
-            url = "https://ladysnake.org"
+            url = "https://maven.ladysnake.org"
         }
+
+        // TerraformersMC Maven (DIPERBAIKI)
         maven {
             name = "TerraformersMC"
-            url = "https://terraformersmc.com"
+            url = "https://maven.terraformersmc.com/"
             content {
                 includeGroup "com.terraformersmc"
             }
         }
-        // Ditambahkan agar Gradle bisa menarik repositori resmi Mojang
+
+        // Mojang Libraries Maven (DIPERBAIKI)
         maven {
             name = "Mojang"
-            url = "https://minecraft.net"
+            url = "https://libraries.minecraft.net/"
         }
-        // Ditambahkan sebagai library cadangan jika pemetaan membutuhkan file dependency NeoForge
+
+        // NeoForged Maven (DIPERBAIKI)
         maven {
             name = "NeoForged"
-            url = "https://neoforged.net"
+            url = "https://maven.neoforged.net/releases/"
         }
     }
 
@@ -107,6 +128,24 @@ subprojects {
         ])
     }
 
+    // Configure Maven publishing.
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = base.archivesName.get()
+                from components.java
+            }
+        }
+
+        // See https://gradle.org for information on how to set up publishing.
+        repositories {
+            // Add repositories to publish to here.
+            // Notice: This block does NOT have the same function as the block in the top level.
+            // The repositories here will be used for publishing your artifact, not for
+            // retrieving dependencies.
+        }
+    }
+}
     // Configure Maven publishing.
     publishing {
         publications {
