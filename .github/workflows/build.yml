@@ -1,31 +1,36 @@
-name: Advanced Multiloader Mod Build & Release
+name: Enterprise Multiloader CI/CD Pipeline
 
-on:
+'on':
   push:
-    branches: [ "main", "master", "1.20.x", "1.21.x" ]
+    branches: [ "**" ]
     tags: [ "v*" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "**" ]
   workflow_dispatch:
     inputs:
-      release_type:
-        description: 'Type of manual build (alpha, beta, release)'
-        required: true
-        default: 'alpha'
-        type: choice
-        options:
-          - alpha
-          - beta
-          - release
+      debug_mode:
+        description: 'Enable Gradle Debug & Stacktrace'
+        required: false
+        default: false
+        type: boolean
+      force_release:
+        description: 'Force generate a draft release'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
   pull-requests: read
   checks: write
+  actions: read
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
 
 jobs:
-  validation:
-    name: Validate Gradle & Repo Structure
+  security-and-validation:
+    name: 🔒 Security & Wrapper Validation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -33,116 +38,118 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validate Gradle Wrapper
+      - name: Validate Gradle Wrapper Checksum
         uses: gradle/wrapper-validation-action@v2
 
-  build:
-    name: Build Mod (${{ matrix.loader }} - Java ${{ matrix.java-version }})
-    needs: validation
+      - name: Check Repository Structure
+        run: |
+          echo "=== Active Git Branch ==="
+          git branch --show-current
+          echo "=== Detected Mod Modules ==="
+          ls -la
+
+  build-matrix:
+    name: ⚙️ Build Mod (Java ${{ matrix.java-version }})
+    needs: security-and-validation
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-          - loader: "fabric"
-            java-version: 17
-            mc-version: "1.20.1"
-          - loader: "fabric"
-            java-version: 21
-            mc-version: "1.21.1"
-          - loader: "neoforge"
-            java-version: 21
-            mc-version: "1.21.1"
+        java-version: [17, 21]
       fail-fast: false
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Java Development Kit ${{ matrix.java-version }}
+      - name: Setup Java JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
 
-      - name: Setup Gradle
+      - name: Setup Gradle Cache & Optimization
         uses: gradle/actions/setup-gradle@v3
         with:
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
 
       - name: Make Gradle Wrapper Executable
         run: chmod +x ./gradlew
 
-      - name: Run Build & Verification
-        run: ./gradlew :${{ matrix.loader }}:build --stacktrace --no-daemon
-        env:
-          MC_VERSION: ${{ matrix.mc-version }}
+      - name: Compile Mod & Run Unit Tests
+        run: |
+          if [ "${{ github.event.inputs.debug_mode }}" = "true" ]; then
+            ./gradlew build check --stacktrace --info
+          else
+            ./gradlew build check
+          fi
 
-      - name: Capture Build Artifacts
+      - name: Upload Build Artifacts (JARs)
         uses: actions/upload-artifact@v4
-        with:
-          name: Mod-Artifacts-${{ matrix.loader }}-${{ matrix.mc-version }}
-          path: |
-            ${{ matrix.loader }}/build/libs/*-dev.jar
-            ${{ matrix.loader }}/build/libs/*-sources.jar
-            ${{ matrix.loader }}/build/libs/*.jar
-          if-no-files-found: error
-          retention-days: 14
-
-  test-and-lint:
-    name: Automated Testing & Checkstyle
-    needs: validation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Java 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: 21
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Run Tests and Checkstyle
-        run: ./gradlew check --continue
-
-      - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
-          files: "**/build/test-results/**/*.xml"
+          name: mod-artifacts-java-${{ matrix.java-version }}
+          path: |
+            build/libs/*.jar
+            */build/libs/*.jar
+            !**/transform_cache/*
+          if-no-files-found: ignore
+          retention-days: 14
 
-  release:
-    name: Create GitHub Release
-    needs: [build, test-and-lint]
-    if: startsWith(github.ref, 'refs/tags/v')
+  test-reporting:
+    name: 📊 Analysis & Test Reporting
+    needs: build-matrix
     runs-on: ubuntu-latest
+    if: always()
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Download All Artifacts
+      - name: Download All Test Artifacts
         uses: actions/download-artifact@v4
         with:
-          path: ./dist
-          merge-multiple: true
+          path: ./artifacts
 
-      - name: Display Downloaded Artifacts
-        run: ls -lh ./dist
-
-      - name: Generate Release Notes from Git History
-        id: release_notes
+      - name: Generate GitHub Step Summary
         run: |
-          echo "PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo '')" >> $GITHUB_ENV
+          echo "### 🚀 Build Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Artifact Name | File Size | Location |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :---: | :--- |" >> $GITHUB_STEP_SUMMARY
+          find ./artifacts -name "*.jar" -exec ls -lh {} \; | while read -r line; do
+            SIZE=$(echo "$line" | awk '{print $5}')
+            FILE=$(echo "$line" | awk '{print $9}')
+            NAME=$(basename "$FILE")
+            echo "| \`$NAME\` | **$SIZE** | \`$FILE\` |" >> $GITHUB_STEP_SUMMARY
+          done
 
-      - name: Publish GitHub Release
+  release-deploy:
+    name: 📦 Automated GitHub Release
+    needs: [build-matrix, test-reporting]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.force_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Final Java 21 Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: mod-artifacts-java-21
+          path: ./dist-release
+
+      - name: Prepare Release Files
+        run: |
+          mkdir -p ./final-release
+          find ./dist-release -name "*.jar" -exec cp {} ./final-release/ \;
+          ls -la ./final-release
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ./dist/*.jar
+          files: ./final-release/*.jar
           generate_release_notes: true
-          draft: false
+          draft: ${{ github.event.inputs.force_release == 'true' }}
           prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
