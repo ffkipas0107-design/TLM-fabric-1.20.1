@@ -72,6 +72,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Compile Mod & Run Unit Tests
+        # Menggunakan JAVA_HOME bawaan runner untuk menimpa org.gradle.java.home yang rusak
         run: |
           if [ "${{ github.event.inputs.debug_mode }}" = "true" ]; then
             ./gradlew build check --stacktrace --info
