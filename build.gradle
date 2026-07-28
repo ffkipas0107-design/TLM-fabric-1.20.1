@@ -1,6 +1,7 @@
 plugins {
-    id 'dev.architectury.loom' version '1.14-SNAPSHOT' apply false
-    id 'architectury-plugin' version '3.4-SNAPSHOT'
+    // Diperbarui ke versi stabil untuk mendukung penataan library Java 21 di Minecraft 1.21.11
+    id 'dev.architectury.loom' version '1.7.414' apply false
+    id 'architectury-plugin' version '3.4.153'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
 
@@ -29,14 +30,14 @@ subprojects {
         }
         maven {
             name = "Modrinth"
-            url = "https://api.modrinth.com/maven"
+            url = "https://modrinth.com"
             content {
                 includeGroup "maven.modrinth"
             }
         }
         maven {
             name = "Architectury"
-            url = "https://maven.architectury.dev/"
+            url = "https://architectury.dev"
             content {
                 includeGroup "dev.architectury"
             }
@@ -51,26 +52,37 @@ subprojects {
         }
         maven {
             name = "Sponge"
-            url = "https://repo.spongepowered.org/repository/maven-public/"
+            url = "https://spongepowered.org"
             content {
                 includeGroup "org.spongepowered"
             }
         }
         maven {
             name = "Ladysnake"
-            url = "https://maven.ladysnake.org/releases"
+            url = "https://ladysnake.org"
         }
         maven {
             name = "TerraformersMC"
-            url = "https://maven.terraformersmc.com/"
+            url = "https://terraformersmc.com"
             content {
                 includeGroup "com.terraformersmc"
             }
+        }
+        // Ditambahkan agar Gradle bisa menarik repositori resmi Mojang
+        maven {
+            name = "Mojang"
+            url = "https://minecraft.net"
+        }
+        // Ditambahkan sebagai library cadangan jika pemetaan membutuhkan file dependency NeoForge
+        maven {
+            name = "NeoForged"
+            url = "https://neoforged.net"
         }
     }
 
     dependencies {
         minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
+        // Menggunakan metode pemetaan resmi yang klop dengan Loom versi baru
         mappings loom.officialMojangMappings()
     }
 
@@ -104,7 +116,7 @@ subprojects {
             }
         }
 
-        // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+        // See https://gradle.org for information on how to set up publishing.
         repositories {
             // Add repositories to publish to here.
             // Notice: This block does NOT have the same function as the block in the top level.
