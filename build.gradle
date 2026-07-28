@@ -37,7 +37,7 @@ subprojects {
             url = "https://maven.fabricmc.net/"
         }
 
-        // Modrinth Maven (PERBAIKAN UTAMA)
+        // Modrinth Maven
         maven {
             name = "Modrinth"
             url = "https://api.modrinth.com/maven"
@@ -46,7 +46,7 @@ subprojects {
             }
         }
 
-        // Architectury Maven (DIPERBAIKI)
+        // Architectury Maven
         maven {
             name = "Architectury"
             url = "https://maven.architectury.dev/"
@@ -64,7 +64,7 @@ subprojects {
             }
         }
 
-        // SpongePowered Maven (DIPERBAIKI)
+        // SpongePowered Maven
         maven {
             name = "Sponge"
             url = "https://repo.spongepowered.org/repository/maven-public/"
@@ -73,13 +73,13 @@ subprojects {
             }
         }
 
-        // Ladysnake Maven (DIPERBAIKI)
+        // Ladysnake Maven
         maven {
             name = "Ladysnake"
             url = "https://maven.ladysnake.org"
         }
 
-        // TerraformersMC Maven (DIPERBAIKI)
+        // TerraformersMC Maven
         maven {
             name = "TerraformersMC"
             url = "https://maven.terraformersmc.com/"
@@ -88,13 +88,13 @@ subprojects {
             }
         }
 
-        // Mojang Libraries Maven (DIPERBAIKI)
+        // Mojang Libraries Maven
         maven {
             name = "Mojang"
             url = "https://libraries.minecraft.net/"
         }
 
-        // NeoForged Maven (DIPERBAIKI)
+        // NeoForged Maven
         maven {
             name = "NeoForged"
             url = "https://maven.neoforged.net/releases/"
@@ -128,24 +128,6 @@ subprojects {
         ])
     }
 
-    // Configure Maven publishing.
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                artifactId = base.archivesName.get()
-                from components.java
-            }
-        }
-
-        // See https://gradle.org for information on how to set up publishing.
-        repositories {
-            // Add repositories to publish to here.
-            // Notice: This block does NOT have the same function as the block in the top level.
-            // The repositories here will be used for publishing your artifact, not for
-            // retrieving dependencies.
-        }
-    }
-}
     // Configure Maven publishing.
     publishing {
         publications {
