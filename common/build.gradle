@@ -5,6 +5,10 @@ architectury {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 dependencies {
+    // Wajib ditambahkan agar modul :common bisa membaca class Minecraft & Mappings di Loom 1.13:
+    minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
+    mappings loom.officialMojangMappings()
+
     // We depend on Fabric Loader here to use the Fabric @Environment annotations,
     // which get remapped to the correct annotations on each platform.
     // Do NOT use other classes from Fabric Loader.
