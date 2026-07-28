@@ -27,10 +27,10 @@ configurations {
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
 
-    modImplementation fabricApi.module("fabric-networking-api-v1", rootProject.fabric_api_version)
-    modImplementation fabricApi.module("fabric-lifecycle-events-v1", rootProject.fabric_api_version)
-    modImplementation fabricApi.module("fabric-rendering-v1", rootProject.fabric_api_version)
-    modImplementation fabricApi.module("fabric-sound-api-v1", rootProject.fabric_api_version)
+    modImplementation fabricApi.module("fabric-networking-api-v1",     rootProject.fabric_api_version)
+    modImplementation fabricApi.module("fabric-lifecycle-events-v1",   rootProject.fabric_api_version)
+    modImplementation fabricApi.module("fabric-rendering-v1",          rootProject.fabric_api_version)
+    modImplementation fabricApi.module("fabric-sound-api-v1",          rootProject.fabric_api_version)
 
     modImplementation "maven.modrinth:forge-config-api-port:$rootProject.forge_config_api_port_version"
 
@@ -38,17 +38,21 @@ dependencies {
         exclude group: "net.fabricmc.fabric-api", module: "fabric-api"
     }
     include "dev.architectury:architectury-fabric:$rootProject.architectury_api_version"
+
     include "maven.modrinth:forge-config-api-port:$rootProject.forge_config_api_port_version"
 
     modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-base:$rootProject.cardinal_components_version"
     modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:$rootProject.cardinal_components_version"
-    include "org.ladysnake.cardinal-components-api:cardinal-components-base:$rootProject.cardinal_components_version"
-    include "org.ladysnake.cardinal-components-api:cardinal-components-entity:$rootProject.cardinal_components_version"
+    include            "org.ladysnake.cardinal-components-api:cardinal-components-base:$rootProject.cardinal_components_version"
+    include            "org.ladysnake.cardinal-components-api:cardinal-components-entity:$rootProject.cardinal_components_version"
 
     implementation "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
-    include "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
+    include        "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
 
-    modCompileOnly "maven.modrinth:iris:1.8.8+1.21.1-fabric"
+    // Iris: dihapus karena versi 1.8.8+1.21.1 tidak kompatibel dengan MC 1.21.11.
+    // Kalau nanti butuh integrasi Iris, tambahkan lagi memakai versi yang menargetkan 1.21.11, contoh:
+    // modCompileOnly "maven.modrinth:iris:<versi-untuk-1.21.11>-fabric"
+
     modCompileOnly "com.terraformersmc:modmenu:$rootProject.modmenu_version"
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
@@ -73,5 +77,5 @@ shadowJar {
 
 remapJar {
     input.set shadowJar.archiveFile
-    archiveFileName = "fox-model-loader-${project.version}-fa1.21.1.jar"
+    archiveFileName = "fox-model-loader-${project.version}-fa${rootProject.minecraft_version}.jar"
 }
