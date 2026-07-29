@@ -1,7 +1,9 @@
 plugins {
-    id 'fabric-loom' version '1.15.4'
+    // Gunakan id 'net.fabricmc.fabric-loom-remap' untuk Minecraft 1.20.1 / 1.21.11
+    id 'net.fabricmc.fabric-loom-remap' version '1.14.8' 
     id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
+
 
 group = rootProject.maven_group
 version = rootProject.mod_version
