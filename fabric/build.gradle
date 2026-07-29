@@ -11,7 +11,7 @@ repositories {
     maven { url 'https://maven.terraformersmc.com' }
     maven { url 'https://maven.shedaniel.me' }
     maven { url 'https://jitpack.io' }
-    maven { url 'https://maven.berniecode.com' } // <- TAMBAH BUAT GECKOLIB 5
+    flatDir { dirs 'libs' } // <- BUAT BACA FOLDER LIBS
 }
 
 architectury {
@@ -32,7 +32,6 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
     modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
 
-    // LIBRARY
     modImplementation "maven.modrinth:forge-config-api-port:${rootProject.forge_config_api_port_version}"
     modImplementation("dev.architectury:architectury-fabric:${rootProject.architectury_api_version}") {
         exclude group: "net.fabricmc.fabric-api", module: "fabric-api"
@@ -41,13 +40,12 @@ dependencies {
     modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:$rootProject.cardinal_components_version"
     implementation "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
     modCompileOnly "com.terraformersmc:modmenu:$rootProject.modmenu_version"
-    modImplementation "software.bernie.geckolib:geckolib:5.4.5" // <- UDAH DIHARDCODE
+    
+    modImplementation name: 'geckolib-fabric-1.21.11-5.4.5' // <- INI NAMA FILE KAMU
 
-    // AMBIL KODE DARI COMMON DOANG
     modImplementation project(':common')
 }
 
-// GABUNGIN RESOURCE DARI COMMON TAPI JANGAN MIXINS.JSON
 processResources {
     inputs.property 'version', project.version
     filesMatching('*.mixins.json') { expand version: project.version }
@@ -59,7 +57,6 @@ processResources {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-// SHADOW CONFIG
 shadowJar {
     configurations = [project.configurations.runtimeClasspath]
     archiveClassifier = ''
@@ -67,7 +64,6 @@ shadowJar {
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
 }
 
-// REMAP JAR SETELAH DI SHADOW
 remapJar {
     input.set shadowJar.archiveFile
     dependsOn shadowJar
