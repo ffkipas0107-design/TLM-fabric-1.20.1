@@ -1,6 +1,6 @@
 plugins {
-    // Gunakan id 'net.fabricmc.fabric-loom-remap' untuk Minecraft 1.20.1 / 1.21.11
-    id 'net.fabricmc.fabric-loom-remap' version '1.14.8' 
+    // DIPERBARUI: Versi dinaikkan ke 1.15.4 agar sesuai dengan syarat mod dependensi Anda
+    id 'net.fabricmc.fabric-loom-remap' version '1.15.4' 
     id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
@@ -10,8 +10,8 @@ version = rootProject.mod_version
 
 repositories {
     mavenCentral()
-    maven { url 'https://maven.terraformersmc.com' }
-    maven { url 'https://maven.shedaniel.me' }
+    maven { url 'https://terraformersmc.com' }
+    maven { url 'https://shedaniel.me' }
     maven { url 'https://jitpack.io' }
     flatDir { dirs 'libs' } // <- BUAT BACA FOLDER LIBS
 }
