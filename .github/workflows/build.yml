@@ -40,12 +40,12 @@ jobs:
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 8.14.3  # <- INI YG DITAMBAHIN. PAKSA PAKE 8.14.3
+          gradle-version: 8.14.3  # PAKSA PAKE 8.14.3 BUAT LOOM 1.11.7
       - run: chmod +x ./gradlew
       - if: ${{ inputs.debug_mode }}
-        run: ./gradlew build --stacktrace --debug
+        run: ./gradlew :common:build :fabric:build --stacktrace --debug --no-daemon  # BUILD URUT
       - if: ${{ !inputs.debug_mode }}
-        run: ./gradlew build
+        run: ./gradlew :common:build :fabric:build --no-daemon  # BUILD URUT
       - name: Upload Fabric Artifact
         uses: actions/upload-artifact@v4
         if: success()
