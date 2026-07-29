@@ -1,11 +1,7 @@
 plugins {
-    // PERBAIKAN: Naikkan ke versi 1.14-SNAPSHOT agar mendukung penuh pemetaan official Mojang di 1.21.11
+    // Menggunakan Loom 1.14-SNAPSHOT untuk mendukung penuh lingkungan kompilasi 1.21.11
     id 'dev.architectury.loom' version '1.14-SNAPSHOT' apply false
-    
-    // Gunakan plugin Architectury versi stabil untuk siklus 1.21+
     id 'architectury-plugin' version '3.4-SNAPSHOT'
-    
-    // Versi Shadow plugin yang stabil dan kompatibel dengan Java 21 & Gradle 8.11+
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
 
@@ -24,7 +20,7 @@ subprojects {
     apply plugin: 'maven-publish'
 
     base {
-        // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
+        // Penamaan suffix otomatis untuk output mod (misal: fox-model-loader-fabric)
         archivesName = "$rootProject.archives_name-$project.name"
     }
 
@@ -77,13 +73,13 @@ subprojects {
             }
         }
 
-        // Ladysnake Maven (Sesuai dokumentasi resmi Cardinal Components)
+        // Ladysnake Maven (Cardinal Components)
         maven {
             name = "Ladysnake"
             url = "https://maven.ladysnake.org/releases"
         }
 
-        // TerraformersMC Maven (Sesuai dokumentasi resmi ModMenu)
+        // TerraformersMC Maven (ModMenu)
         maven {
             name = "TerraformersMC"
             url = "https://maven.terraformersmc.com/releases"
@@ -105,18 +101,14 @@ subprojects {
         }
     }
 
+    // PERBAIKAN: Blok dependencies di root DIKOSONGKAN.
+    // Pemuatan minecraft dan mappings dipindahkan sepenuhnya ke file build.gradle masing-masing sub-proyek.
     dependencies {
-        minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
-        // Dengan Loom 1.14-SNAPSHOT, pemetaan official Mojang di bawah ini 
-        // akan di-remap dengan aman dan otomatis ke intermediary di subproyek :fabric
-        mappings loom.officialMojangMappings()
     }
 
     java {
-        // Loom akan melampirkan sourcesJar secara otomatis ke task kompilasi
         withSourcesJar()
-
-        // Sesuai standar ekosistem 1.21.11, kompilasi wajib dikunci pada Java 21
+        // Mengunci target lingkungan ke Java 21 sesuai standar Minecraft 1.21.11
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
@@ -132,7 +124,6 @@ subprojects {
         ])
     }
 
-    // Konfigurasi publikasi Maven
     publishing {
         publications {
             mavenJava(MavenPublication) {
@@ -140,9 +131,7 @@ subprojects {
                 from components.java
             }
         }
-
         repositories {
-            // Tempat penampungan build lokal jika diperlukan (bisa dikosongkan)
         }
     }
 }
