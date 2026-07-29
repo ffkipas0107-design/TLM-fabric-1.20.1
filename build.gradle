@@ -1,6 +1,6 @@
 plugins {
-    // Menggunakan Loom 1.14-SNAPSHOT untuk mendukung penuh lingkungan kompilasi 1.21.11
-    id 'dev.architectury.loom' version '1.14-SNAPSHOT' apply false
+    // DIPERBARUI: Diubah ke 1.15-SNAPSHOT agar kompatibel dengan dependensi baru
+    id 'dev.architectury.loom' version '1.15-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
