@@ -19,6 +19,13 @@ subprojects {
     apply plugin: 'architectury-plugin'
     apply plugin: 'maven-publish'
 
+    // ===================================================================================
+    // PERBAIKAN URUTAN BUILD: Memaksa modul :fabric menunggu :common selesai dikompilasi
+    // ===================================================================================
+    if (project.name == 'fabric') {
+        evaluationDependsOn(':common')
+    }
+
     base {
         // Penamaan suffix otomatis untuk output mod (misal: fox-model-loader-fabric)
         archivesName = "$rootProject.archives_name-$project.name"
