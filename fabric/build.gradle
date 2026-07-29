@@ -1,5 +1,6 @@
 plugins {
-    id 'com.github.johnrengelman.shadow'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'dev.architectury.loom' version '1.11.7'
 }
 
 architectury {
@@ -23,7 +24,7 @@ configurations {
 }
 
 dependencies {
-    minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
+    minecraft "com.mojang:minecraft:$rootProject.minecraft_version"
     mappings loom.officialMojangMappings()
 
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
@@ -33,11 +34,9 @@ dependencies {
     modImplementation fabricApi.module("fabric-rendering-v1",          rootProject.fabric_api_version)
     modImplementation fabricApi.module("fabric-sound-api-v1",          rootProject.fabric_api_version)
 
-    // UDAH DIUBAH AMBIL DARI gradle.properties
     modImplementation "maven.modrinth:forge-config-api-port:${rootProject.forge_config_api_port_version}"
     include        "maven.modrinth:forge-config-api-port:${rootProject.forge_config_api_port_version}"
 
-    // UDAH DIUBAH AMBIL DARI gradle.properties
     modImplementation("dev.architectury:architectury-fabric:${rootProject.architectury_api_version}") {
         exclude group: "net.fabricmc.fabric-api", module: "fabric-api"
     }
@@ -53,9 +52,13 @@ dependencies {
 
     modCompileOnly "com.terraformersmc:modmenu:$rootProject.modmenu_version"
 
-    common(project(path: ':common', configuration: 'namedElements')) { transitive false }
-    shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
+    // YANG INI PALING PENTING SAYANG
+    implementation project(':common')
+    shadowBundle project(':common')
 }
+
+// BIAR SEMUA LIBRARY DI-INCLUDE KE SHADOW
+configurations.shadowBundle.extendsFrom(configurations.include)
 
 processResources {
     inputs.property 'version', project.version
@@ -71,9 +74,14 @@ processResources {
 shadowJar {
     configurations = [project.configurations.shadowBundle]
     archiveClassifier = 'dev-shadow'
+    mergeServiceFiles() // WAJIB BIAR MIXINS.JSON KE-MERGE
 }
 
 remapJar {
     input.set shadowJar.archiveFile
-    archiveFileName = "fox-model-loader-${project.version}-fabric-${rootProject.minecraft_version}.jar"
+    archiveFileName = "yes-steve-model-${project.version}-fabric-${rootProject.minecraft_version}.jar"
+}
+
+loom {
+    splitEnvironmentSourceSets()
 }
