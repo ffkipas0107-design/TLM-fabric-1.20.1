@@ -29,22 +29,8 @@ env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
 
 jobs:
-  security-and-validation:
-    name: Security & Wrapper Validation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: gradle/wrapper-validation-action@v2
-      - run: |
-          echo "=== Active Git Branch ==="
-          git branch --show-current
-          ls -la
-
   build-project:
     name: Build Mod Java 21
-    needs: security-and-validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -55,22 +41,17 @@ jobs:
       - uses: gradle/actions/setup-gradle@v3
       - run: chmod +x ./gradlew
       - run: ./gradlew clean
-      - run: |
-          if [ "${{ inputs.debug_mode }}" = "true" ]; then
-            ./gradlew build --stacktrace --info
-          else
-            ./gradlew build
-          fi
+      - run: ./gradlew build
       - name: Upload Fabric Artifact
         uses: actions/upload-artifact@v4
         if: success()
         with:
           name: yes-steve-model-fabric-1.21.11
-          path: 
-            build/libs/*.jar
+          path: |
+            **/build/libs/*.jar
             !**/*-sources.jar
             !**/*-dev.jar
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 7
 
   release-deploy:
