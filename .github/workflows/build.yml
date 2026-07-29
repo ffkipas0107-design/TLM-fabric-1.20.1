@@ -38,10 +38,14 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.14.3  # <- INI YG DITAMBAHIN. PAKSA PAKE 8.14.3
       - run: chmod +x ./gradlew
-      - run: ./gradlew clean
-      - run: ./gradlew build
+      - if: ${{ inputs.debug_mode }}
+        run: ./gradlew build --stacktrace --debug
+      - if: ${{ !inputs.debug_mode }}
+        run: ./gradlew build
       - name: Upload Fabric Artifact
         uses: actions/upload-artifact@v4
         if: success()
