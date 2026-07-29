@@ -1,6 +1,6 @@
 name: Enterprise Multiloader CI/CD Pipeline
 
-'on':
+on:
   push:
     branches: [ "**" ]
     tags: [ "v*" ]
@@ -33,16 +33,11 @@ jobs:
     name: 🔒 Security & Wrapper Validation
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Validate Gradle Wrapper Checksum
-        uses: gradle/wrapper-validation-action@v2
-
-      - name: Check Repository Structure
-        run: |
+      - uses: gradle/wrapper-validation-action@v2
+      - run: |
           echo "=== Active Git Branch ==="
           git branch --show-current
           echo "=== Detected Mod Modules ==="
@@ -52,10 +47,8 @@ jobs:
     name: ⚙️ Build Mod (Java 21)
     needs: security-and-validation
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Java JDK 21
         uses: actions/setup-java@v4
@@ -63,92 +56,45 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Setup Gradle Cache & Optimization
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
+      - uses: gradle/actions/setup-gradle@v3
 
-      - name: Make Gradle Wrapper Executable
-        run: chmod +x ./gradlew
+      - run: chmod +x./gradlew
 
-      - name: Compile Mod & Run Unit Tests
-        # Menggunakan JAVA_HOME bawaan runner untuk menimpa org.gradle.java.home yang rusak
+      - name: Clean Old Build
+        run:./gradlew clean # Biar gak ada sisa file corrupt
+
+      - name: Build Mod
         run: |
-          if [ "${{ github.event.inputs.debug_mode }}" = "true" ]; then
-            ./gradlew build check --stacktrace --info
+          if [ "${{ inputs.debug_mode }}" = "true" ]; then
+           ./gradlew build --stacktrace --info
           else
-            ./gradlew build check
+           ./gradlew build
           fi
 
-      - name: Upload Build Artifacts (JARs)
+      - name: Upload Fabric Artifact
         uses: actions/upload-artifact@v4
-        if: always()
+        if: success()
         with:
-          name: mod-artifacts-java-21
-          path: |
-            build/libs/*.jar
-            common/build/libs/*.jar
-            fabric/build/libs/*.jar
-            forge/build/libs/*.jar
-            !**/transform_cache/*
-          if-no-files-found: warn
-          retention-days: 14
-
-  test-reporting:
-    name: 📊 Analysis & Test Reporting
-    needs: build-project
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Download All Test Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-
-      - name: Generate GitHub Step Summary
-        run: |
-          echo "### 🚀 Build Execution Summary" >> $GITHUB_STEP_SUMMARY
-          echo "| Artifact Name | File Size | Location |" >> $GITHUB_STEP_SUMMARY
-          echo "| :--- | :---: | :--- |" >> $GITHUB_STEP_SUMMARY
-          find ./artifacts -name "*.jar" -exec ls -lh {} \; | while read -r line; do
-            SIZE=$(echo "$line" | awk '{print $5}')
-            FILE=$(echo "$line" | awk '{print $9}')
-            NAME=$(basename "$FILE")
-            echo "| \`$NAME\` | **$SIZE** | \`$FILE\` |" >> $GITHUB_STEP_SUMMARY
-          done
+          name: yes-steve-model-fabric-1.21.11
+          path: fabric/build/libs/*-fabric.jar # Pastiin ambil dari folder fabric
+          if-no-files-found: error
+          retention-days: 7
 
   release-deploy:
-    name: 📦 Automated GitHub Release
-    needs: [build-project, test-reporting]
-    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.force_release == 'true'
+    name: 📦 Auto Release
+    needs: build-project
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.force_release == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
-          fetch-depth: 0
-
-      - name: Download Final Java 21 Artifacts
-        uses: actions/download-artifact@v4
+          name: yes-steve-model-fabric-1.21.11
+          path:./dist-release
+      - uses: softprops/action-gh-release@v2
         with:
-          name: mod-artifacts-java-21
-          path: ./dist-release
-
-      - name: Prepare Release Files
-        run: |
-          mkdir -p ./final-release
-          find ./dist-release -name "*.jar" -exec cp {} ./final-release/ \;
-          ls -la ./final-release
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ./final-release/*.jar
+          files:./dist-release/*.jar
           generate_release_notes: true
-          draft: ${{ github.event.inputs.force_release == 'true' }}
-          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
+          draft: ${{ inputs.force_release == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
