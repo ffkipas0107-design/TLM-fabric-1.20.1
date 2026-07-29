@@ -40,7 +40,7 @@ jobs:
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 8.14.3  # PAKSA PAKE 8.14.3 BUAT LOOM 1.11.7
+          gradle-version: 9.2.0 # DIPERBARUI: Menggunakan Gradle 9.2 agar kompatibel dengan Loom 1.14.8
       - run: chmod +x ./gradlew
       - if: ${{ inputs.debug_mode }}
         run: ./gradlew :common:build :fabric:build --stacktrace --debug --no-daemon  # BUILD URUT
