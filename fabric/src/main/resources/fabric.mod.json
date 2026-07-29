@@ -2,28 +2,28 @@
   "schemaVersion": 1,
   "id": "yes_steve_model",
   "version": "${version}",
-  "name": "Fox Model Loader",
-  "description": "Fox Model Loader - Custom player model system for Minecraft.",
-  "authors": ["Micaftic"],
+  "name": "Yes Steve Model",
+  "description": "Custom player model system for Minecraft 1.21.11",
+  "authors": ["Maou"],
   "contact": {
-    "homepage": "https://github.com/sdf123098/Fox-Model-Loader",
-    "issues": "https://github.com/sdf123098/Fox-Model-Loader/issues"
+    "homepage": "https://github.com/ffkipas0107-design/TLM-fabric-1.20.1",
+    "issues": "https://github.com/ffkipas0107-design/TLM-fabric-1.20.1/issues"
   },
   "license": "MIT",
   "icon": "yesstevemodel.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.elfmcys.yesstevemodel.fabric.YesSteveModelFabric"
+      "com.yesstevemodel.fabric.YesSteveModelFabric"
     ],
     "client": [
-      "com.elfmcys.yesstevemodel.fabric.client.YesSteveModelFabricClient"
+      "com.yesstevemodel.fabric.client.YesSteveModelFabricClient"
     ],
     "modmenu": [
-      "com.elfmcys.yesstevemodel.fabric.compat.ModMenuConfigScreenProvider"
+      "com.yesstevemodel.fabric.compat.ModMenuConfigScreenProvider"
     ],
     "cardinal-components-entity": [
-      "com.elfmcys.yesstevemodel.fabric.YsmComponents"
+      "com.yesstevemodel.fabric.YsmComponents"
     ]
   },
   "mixins": [
@@ -36,7 +36,8 @@
     "java": ">=21",
     "fabric-api": "*",
     "architectury": ">=19.0.0",
-    "forgeconfigapiport": ">=20.2.0"
+    "forgeconfigapiport": ">=20.2.0",
+    "geckolib": "*"
   },
   "suggests": {
     "modmenu": "*"
