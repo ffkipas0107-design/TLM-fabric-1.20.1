@@ -1,7 +1,11 @@
 plugins {
-    // Ubah dari '1.9-SNAPSHOT' menjadi '1.13.467' agar sesuai tuntutan error
-    id 'dev.architectury.loom' version '1.11-SNAPSHOT' apply false
+    // PERBAIKAN: Naikkan ke versi 1.14-SNAPSHOT agar mendukung penuh pemetaan official Mojang di 1.21.11
+    id 'dev.architectury.loom' version '1.14-SNAPSHOT' apply false
+    
+    // Gunakan plugin Architectury versi stabil untuk siklus 1.21+
     id 'architectury-plugin' version '3.4-SNAPSHOT'
+    
+    // Versi Shadow plugin yang stabil dan kompatibel dengan Java 21 & Gradle 8.11+
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
 
@@ -73,13 +77,13 @@ subprojects {
             }
         }
 
-        // Ladysnake Maven (BENAR)
+        // Ladysnake Maven (Sesuai dokumentasi resmi Cardinal Components)
         maven {
             name = "Ladysnake"
             url = "https://maven.ladysnake.org/releases"
         }
 
-        // TerraformersMC Maven (BENAR)
+        // TerraformersMC Maven (Sesuai dokumentasi resmi ModMenu)
         maven {
             name = "TerraformersMC"
             url = "https://maven.terraformersmc.com/releases"
@@ -103,16 +107,16 @@ subprojects {
 
     dependencies {
         minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
-        // Menggunakan metode pemetaan resmi yang klop dengan Loom versi baru
+        // Dengan Loom 1.14-SNAPSHOT, pemetaan official Mojang di bawah ini 
+        // akan di-remap dengan aman dan otomatis ke intermediary di subproyek :fabric
         mappings loom.officialMojangMappings()
     }
 
     java {
-        // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-        // if it is present.
-        // If you remove this line, sources will not be generated.
+        // Loom akan melampirkan sourcesJar secara otomatis ke task kompilasi
         withSourcesJar()
 
+        // Sesuai standar ekosistem 1.21.11, kompilasi wajib dikunci pada Java 21
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
@@ -128,7 +132,7 @@ subprojects {
         ])
     }
 
-    // Configure Maven publishing.
+    // Konfigurasi publikasi Maven
     publishing {
         publications {
             mavenJava(MavenPublication) {
@@ -137,12 +141,8 @@ subprojects {
             }
         }
 
-        // See https://gradle.org for information on how to set up publishing.
         repositories {
-            // Add repositories to publish to here.
-            // Notice: This block does NOT have the same function as the block in the top level.
-            // The repositories here will be used for publishing your artifact, not for
-            // retrieving dependencies.
+            // Tempat penampungan build lokal jika diperlukan (bisa dikosongkan)
         }
     }
 }
