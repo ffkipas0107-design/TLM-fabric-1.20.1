@@ -1,4 +1,4 @@
-package com.elfmcys.yesstevemodel.mixin;
+package com.elfmcys.yesstevemodel;
 
 import com.elfmcys.yesstevemodel.YesSteveModel;
 import com.elfmcys.yesstevemodel.geckolib3.core.molang.util.StringPool;
