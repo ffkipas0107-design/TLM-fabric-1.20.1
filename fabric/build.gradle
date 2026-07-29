@@ -25,7 +25,10 @@ loom {
     splitEnvironmentSourceSets()
 }
 
-archivesBaseName = "yes-steve-model-fabric"
+// DIPERBARUI: Menggunakan format Gradle 9.x untuk menggantikan archivesBaseName lama
+base {
+    archivesName = "yes-steve-model-fabric"
+}
 
 dependencies {
     minecraft "com.mojang:minecraft:$rootProject.minecraft_version"
@@ -69,7 +72,8 @@ shadowJar {
 remapJar {
     input.set shadowJar.archiveFile
     dependsOn shadowJar
-    archiveFileName = "${archivesBaseName}-${project.version}-fabric-${rootProject.minecraft_version}.jar"
+    // DIPERBARUI: archivesBaseName diganti menjadi base.archivesName.get() agar terbaca dengan benar di Gradle 9.x
+    archiveFileName = "${base.archivesName.get()}-${project.version}-fabric-${rootProject.minecraft_version}.jar"
 }
 
 build.dependsOn remapJar
