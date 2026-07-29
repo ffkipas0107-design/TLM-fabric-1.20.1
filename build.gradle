@@ -1,8 +1,19 @@
-plugins {
-    id 'dev.architectury.loom' version '1.14.8' apply false
-    id 'architectury-plugin' version '3.4.22'
-    id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
+buildscript {
+    repositories {
+        gradlePluginPortal()
+        maven { url 'https://maven.fabricmc.net/' }
+        maven { url 'https://maven.architectury.dev/' }
+    }
+    dependencies {
+        classpath 'dev.architectury:architectury-loom:1.14.8'
+        classpath 'dev.architectury:architectury-plugin:3.4.22'
+        classpath 'com.github.johnrengelman:shadow:8.1.1'
+    }
 }
+
+apply plugin: 'dev.architectury.loom'
+apply plugin: 'architectury-plugin'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 architectury {
     minecraft = project.minecraft_version
@@ -18,7 +29,6 @@ subprojects {
     apply plugin: 'architectury-plugin'
     apply plugin: 'maven-publish'
 
-    // PERBAIKAN URUTAN BUILD: Memaksa modul :fabric menunggu modul :common selesai diproduksi
     if (project.name == 'fabric') {
         evaluationDependsOn(':common')
     }
@@ -29,67 +39,14 @@ subprojects {
 
     repositories {
         mavenCentral()
-
-        flatDir {
-            dirs rootProject.file('libs')
-        }
-
-        // Repositori Resmi Fabric
-        maven {
-            name = "Fabric"
-            url = "https://maven.fabricmc.net/"
-        }
-
-        // Modrinth Maven
-        maven {
-            name = "Modrinth"
-            url = "https://api.modrinth.com/maven"
-            content {
-                includeGroup "maven.modrinth"
-            }
-        }
-
-        // Architectury Maven
-        maven {
-            name = "Architectury"
-            url = "https://maven.architectury.dev/"
-            content {
-                includeGroup "dev.architectury"
-            }
-        }
-
-        // Ladysnake Maven - URL BENER
-        maven {
-            name = "Ladysnake"
-            url = "https://maven.ladysnake.org/"
-        }
-
-        // TerraformersMC Maven
-        maven {
-            name = "TerraformersMC"
-            url = "https://maven.terraformersmc.com/"
-            content {
-                includeGroup "com.terraformersmc"
-            }
-        }
-
-        // Shedaniel Maven - BUAT MODMENU
-        maven {
-            name = "Shedaniel"
-            url = "https://maven.shedaniel.me/"
-        }
-
-        // Jalur Pustaka JitPack
-        maven {
-            name = "JitPack"
-            url = "https://jitpack.io"
-            content {
-                includeGroup "com.github.TartaricAlkaline"
-            }
-        }
-    }
-
-    dependencies {
+        flatDir { dirs rootProject.file('libs') }
+        maven { name = "Fabric"; url = "https://maven.fabricmc.net/" }
+        maven { name = "Modrinth"; url = "https://api.modrinth.com/maven"; content { includeGroup "maven.modrinth" } }
+        maven { name = "Architectury"; url = "https://maven.architectury.dev/"; content { includeGroup "dev.architectury" }
+        maven { name = "Ladysnake"; url = "https://maven.ladysnake.org/" }
+        maven { name = "TerraformersMC"; url = "https://maven.terraformersmc.com/"; content { includeGroup "com.terraformersmc" }
+        maven { name = "Shedaniel"; url = "https://maven.shedaniel.me/" }
+        maven { name = "JitPack"; url = "https://jitpack.io"; content { includeGroup "com.github.TartaricAlkaline" }
     }
 
     java {
@@ -101,12 +58,7 @@ subprojects {
     tasks.withType(JavaCompile).configureEach {
         options.encoding = 'UTF-8'
         options.release = 21
-        options.compilerArgs.addAll([
-                '-Xlint:none',
-                '-Xlint:-deprecation',
-                '-Xlint:-removal',
-                '-Xlint:-unchecked'
-        ])
+        options.compilerArgs.addAll(['-Xlint:none', '-Xlint:-deprecation', '-Xlint:-removal', '-Xlint:-unchecked'])
     }
 
     publishing {
