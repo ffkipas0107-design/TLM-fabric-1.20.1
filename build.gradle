@@ -1,6 +1,6 @@
 plugins {
-    // DIPERBARUI: Diubah ke 1.15-SNAPSHOT agar kompatibel dengan dependensi baru
-    id 'dev.architectury.loom' version '1.15-SNAPSHOT' apply false
+    // KEMBALIKAN KE 1.14-SNAPSHOT: Karena versi 1.15 tidak ada di Maven Architectury
+    id 'dev.architectury.loom' version '1.14-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
@@ -19,9 +19,7 @@ subprojects {
     apply plugin: 'architectury-plugin'
     apply plugin: 'maven-publish'
 
-    // ===================================================================================
     // PERBAIKAN URUTAN BUILD: Memaksa modul :fabric menunggu :common selesai dikompilasi
-    // ===================================================================================
     if (project.name == 'fabric') {
         evaluationDependsOn(':common')
     }
@@ -41,13 +39,13 @@ subprojects {
         // Repositori Resmi Fabric
         maven {
             name = "Fabric"
-            url = "https://maven.fabricmc.net/"
+            url = "https://fabricmc.net"
         }
 
         // Modrinth Maven
         maven {
             name = "Modrinth"
-            url = "https://api.modrinth.com/maven"
+            url = "https://modrinth.com"
             content {
                 includeGroup "maven.modrinth"
             }
@@ -56,7 +54,7 @@ subprojects {
         // Architectury Maven
         maven {
             name = "Architectury"
-            url = "https://maven.architectury.dev/"
+            url = "https://architectury.dev"
             content {
                 includeGroup "dev.architectury"
             }
@@ -74,7 +72,7 @@ subprojects {
         // SpongePowered Maven
         maven {
             name = "Sponge"
-            url = "https://repo.spongepowered.org/repository/maven-public/"
+            url = "https://spongepowered.org"
             content {
                 includeGroup "org.spongepowered"
             }
@@ -83,13 +81,13 @@ subprojects {
         // Ladysnake Maven (Cardinal Components)
         maven {
             name = "Ladysnake"
-            url = "https://maven.ladysnake.org/releases"
+            url = "https://ladysnake.org"
         }
 
         // TerraformersMC Maven (ModMenu)
         maven {
             name = "TerraformersMC"
-            url = "https://maven.terraformersmc.com/releases"
+            url = "https://terraformersmc.com"
             content {
                 includeGroup "com.terraformersmc"
             }
@@ -98,52 +96,12 @@ subprojects {
         // Mojang Libraries Maven
         maven {
             name = "Mojang"
-            url = "https://libraries.minecraft.net/"
+            url = "https://minecraft.net"
         }
 
         // NeoForged Maven
         maven {
             name = "NeoForged"
-            url = "https://maven.neoforged.net/releases/"
+            url = "https://neoforged.net"
         }
     }
-
-    // PERBAIKAN: Blok dependencies di root DIKOSONGKAN.
-    // Pemuatan minecraft dan mappings dipindahkan sepenuhnya ke file build.gradle masing-masing sub-proyek.
-    dependencies {
-    }
-
-    java {
-        withSourcesJar()
-        // Mengunci target lingkungan ke Java 21 sesuai standar Minecraft 1.21.11
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    tasks.withType(JavaCompile).configureEach {
-        // ===================================================================================
-        // BYPASS CODES: Memaksa compiler mengabaikan 100 error simbol rendering internal game
-        // yang berubah di versi 1.21.11 agar build tetap melaju sampai mencetak file .JAR
-        // ===================================================================================
-        it.options.failOnError = false
-        it.options.release = 21
-        it.options.compilerArgs.addAll([
-                '-Xlint:none',
-                '-Xlint:-deprecation',
-                '-Xlint:-removal',
-                '-Xlint:-unchecked',
-                '-nowarn'
-        ])
-    }
-
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                artifactId = base.archivesName.get()
-                from components.java
-            }
-        }
-        repositories {
-        }
-    }
-}
