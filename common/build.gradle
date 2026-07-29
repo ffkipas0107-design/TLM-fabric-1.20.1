@@ -4,7 +4,10 @@ architectury {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
-archivesBaseName = "yes-steve-model-common" // <- PENTING BUAT NAMA JAR
+// DIPERBARUI: Menggunakan format Gradle 9.x untuk menggantikan archivesBaseName lama
+base {
+    archivesName = "yes-steve-model-common"
+}
 
 dependencies {
     // Memuat pustaka dasar Minecraft sesuai versi properti yang ditentukan (1.21.11)
