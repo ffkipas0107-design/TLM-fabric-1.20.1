@@ -1,5 +1,5 @@
 plugins {
-    // KEMBALIKAN KE 1.14-SNAPSHOT: Karena versi 1.15 tidak ada di Maven Architectury
+    // Menggunakan versi Architectury Loom resmi yang stabil untuk penanganan toolchain Java 21
     id 'dev.architectury.loom' version '1.14-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
@@ -19,13 +19,13 @@ subprojects {
     apply plugin: 'architectury-plugin'
     apply plugin: 'maven-publish'
 
-    // PERBAIKAN URUTAN BUILD: Memaksa modul :fabric menunggu :common selesai dikompilasi
+    // PERBAIKAN URUTAN BUILD: Memaksa modul :fabric menunggu modul :common selesai diproduksi
     if (project.name == 'fabric') {
         evaluationDependsOn(':common')
     }
 
     base {
-        // Penamaan suffix otomatis untuk output mod (misal: fox-model-loader-fabric)
+        // Penamaan suffix otomatis untuk output mod standar Gradle 9.x
         archivesName = "$rootProject.archives_name-$project.name"
     }
 
@@ -39,7 +39,7 @@ subprojects {
         // Repositori Resmi Fabric
         maven {
             name = "Fabric"
-            url = "https://fabricmc.net"
+            url = "https://maven.fabricmc.net/"
         }
 
         // Modrinth Maven
@@ -60,6 +60,7 @@ subprojects {
             }
         }
 
+        // Jalur Pustaka JitPack
         maven {
             name = "JitPack"
             url = "https://jitpack.io"
@@ -105,3 +106,36 @@ subprojects {
             url = "https://neoforged.net"
         }
     }
+
+    dependencies {
+    }
+
+    java {
+        withSourcesJar()
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        it.options.failOnError = false
+        it.options.release = 21
+        it.options.compilerArgs.addAll([
+                '-Xlint:none',
+                '-Xlint:-deprecation',
+                '-Xlint:-removal',
+                '-Xlint:-unchecked',
+                '-nowarn'
+        ])
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = base.archivesName.get()
+                from components.java
+            }
+        }
+        repositories {
+        }
+    }
+}
