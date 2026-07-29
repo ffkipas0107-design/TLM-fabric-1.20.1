@@ -5,33 +5,30 @@ architectury {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 dependencies {
-    // Wajib di Loom 1.13+ supaya :common bisa resolve class Minecraft & mappings
+    // Memuat pustaka dasar Minecraft sesuai versi properti yang ditentukan (1.21.11)
     minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
     
-    // PERBAIKAN: Menggunakan sistem layered mappings agar Loom memproses
-    // mapping official Mojang dengan benar saat dikompilasi ke platform Fabric
-    mappings loom.layered() {
-        officialMojangMappings()
-    }
+    // PERBAIKAN: Menggunakan metode pemetaan langsung untuk proyek Architectury.
+    // Metode ini memastikan seluruh kelas game dipetakan ke Official Mojang Mappings
+    // dan dialirkan ke classpath kompilasi subproyek :common secara sempurna.
+    mappings loom.officialMojangMappings()
 
     // Fabric Loader hanya dipakai untuk anotasi @Environment.
     // JANGAN pakai class lain dari Fabric Loader di :common.
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
 
-    // Architectury API (common) — Event<>, ClientLifecycleEvent, PlayerEvent, dst.
+    // Architectury API (common) — Menyediakan Event<>, ClientLifecycleEvent, PlayerEvent, dll.
     modCompileOnly "dev.architectury:architectury:$rootProject.architectury_api_version"
 
-    // Forge Config API Port — supaya :common lihat ForgeConfigSpec di compile-time.
-    // Runtime: Forge disediakan Forge sendiri, Fabric lewat modImplementation di :fabric.
+    // Forge Config API Port — Menyelesaikan error 'cannot find symbol class ModConfig' di compile-time.
     modCompileOnly "maven.modrinth:forge-config-api-port:$rootProject.forge_config_api_port_version"
 
-    // ImageStream — decode avif/webp/jpeg. Di-bundle jar-in-jar oleh :forge/:fabric.
+    // ImageStream — Digunakan untuk mendekode format gambar avif/webp/jpeg.
     compileOnly "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
 }
 
 // Native build (CMake) — DIMATIKAN.
-// Task ini butuh CMake + toolchain lokal; GitHub Actions default nggak punya
-// dan bikin build gagal. Kalau perlu native, aktifkan manual + install CMake di workflow.
+// Task ini butuh CMake + toolchain lokal; GitHub Actions default tidak menyediakannya.
 tasks.register('compileNative') {
     enabled = false
     doLast {
