@@ -34,14 +34,14 @@ dependencies {
     modImplementation fabricApi.module("fabric-sound-api-v1",          rootProject.fabric_api_version)
 
     // TURUNIN VERSI BIAR COCOK SAMA MODS KAMU
-    modImplementation "maven.modrinth:forge-config-api-port:20.2.6+1.21.11"
-    include        "maven.modrinth:forge-config-api-port:20.2.6+1.21.11"
+    modImplementation "maven.modrinth:forge-config-api-port:20.2.6"
+    include        "maven.modrinth:forge-config-api-port:20.2.6"
 
     // TURUNIN VERSI BIAR COCOK SAMA MODS KAMU
-    modImplementation("dev.architectury:architectury-fabric:19.0.1+1.21.11") {
+    modImplementation("dev.architectury:architectury-fabric:19.0.1") {
         exclude group: "net.fabricmc.fabric-api", module: "fabric-api"
     }
-    include "dev.architectury:architectury-fabric:19.0.1+1.21.11"
+    include "dev.architectury:architectury-fabric:19.0.1"
 
     modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-base:$rootProject.cardinal_components_version"
     modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:$rootProject.cardinal_components_version"
