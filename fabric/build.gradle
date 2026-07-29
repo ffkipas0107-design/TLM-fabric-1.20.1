@@ -11,6 +11,7 @@ repositories {
     maven { url 'https://maven.terraformersmc.com' }
     maven { url 'https://maven.shedaniel.me' }
     maven { url 'https://jitpack.io' }
+    maven { url 'https://maven.berniecode.com' } // <- TAMBAH BUAT GECKOLIB 5
 }
 
 architectury {
@@ -22,7 +23,7 @@ loom {
     splitEnvironmentSourceSets()
 }
 
-archivesBaseName = "yes-steve-model-fabric" // <- TAMBAH INI BIAR NAMA JAR KONSISTEN
+archivesBaseName = "yes-steve-model-fabric"
 
 dependencies {
     minecraft "com.mojang:minecraft:$rootProject.minecraft_version"
@@ -40,7 +41,7 @@ dependencies {
     modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:$rootProject.cardinal_components_version"
     implementation "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
     modCompileOnly "com.terraformersmc:modmenu:$rootProject.modmenu_version"
-    modImplementation "software.bernie.geckolib:geckolib:${rootProject.geckolib_version}" // <- TAMBAH GECKOLIB
+    modImplementation "software.bernie.geckolib:geckolib:5.4.5" // <- UDAH DIHARDCODE
 
     // AMBIL KODE DARI COMMON DOANG
     modImplementation project(':common')
@@ -50,9 +51,9 @@ dependencies {
 processResources {
     inputs.property 'version', project.version
     filesMatching('*.mixins.json') { expand version: project.version }
-    filesMatching('fabric.mod.json') { expand version: project.version } // <- TAMBAH INI
+    filesMatching('fabric.mod.json') { expand version: project.version }
     from(project(':common').sourceSets.main.resources.srcDirs) {
-        exclude '**/*.mixins.json' // PENTING: JANGAN COPY MIXINS DARI COMMON
+        exclude '**/*.mixins.json'
         exclude 'fabric.mod.json'
     }
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -66,11 +67,11 @@ shadowJar {
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
 }
 
-// REMAP JAR SETELAH DI SHADOW - PAKE archivesBaseName BIAR OTOMATIS
+// REMAP JAR SETELAH DI SHADOW
 remapJar {
     input.set shadowJar.archiveFile
     dependsOn shadowJar
-    archiveFileName = "${archivesBaseName}-${project.version}-fabric-${rootProject.minecraft_version}.jar" // <- GANTI JADI INI
+    archiveFileName = "${archivesBaseName}-${project.version}-fabric-${rootProject.minecraft_version}.jar"
 }
 
 build.dependsOn remapJar
