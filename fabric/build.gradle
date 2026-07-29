@@ -22,6 +22,8 @@ loom {
     splitEnvironmentSourceSets()
 }
 
+archivesBaseName = "yes-steve-model-fabric" // <- TAMBAH INI BIAR NAMA JAR KONSISTEN
+
 dependencies {
     minecraft "com.mojang:minecraft:$rootProject.minecraft_version"
     mappings loom.officialMojangMappings()
@@ -38,6 +40,7 @@ dependencies {
     modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:$rootProject.cardinal_components_version"
     implementation "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
     modCompileOnly "com.terraformersmc:modmenu:$rootProject.modmenu_version"
+    modImplementation "software.bernie.geckolib:geckolib:${rootProject.geckolib_version}" // <- TAMBAH GECKOLIB
 
     // AMBIL KODE DARI COMMON DOANG
     modImplementation project(':common')
@@ -47,6 +50,7 @@ dependencies {
 processResources {
     inputs.property 'version', project.version
     filesMatching('*.mixins.json') { expand version: project.version }
+    filesMatching('fabric.mod.json') { expand version: project.version } // <- TAMBAH INI
     from(project(':common').sourceSets.main.resources.srcDirs) {
         exclude '**/*.mixins.json' // PENTING: JANGAN COPY MIXINS DARI COMMON
         exclude 'fabric.mod.json'
@@ -62,11 +66,11 @@ shadowJar {
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
 }
 
-// REMAP JAR SETELAH DI SHADOW
+// REMAP JAR SETELAH DI SHADOW - PAKE archivesBaseName BIAR OTOMATIS
 remapJar {
     input.set shadowJar.archiveFile
     dependsOn shadowJar
-    archiveFileName = "yes-steve-model-${project.version}-fabric-${rootProject.minecraft_version}.jar"
+    archiveFileName = "${archivesBaseName}-${project.version}-fabric-${rootProject.minecraft_version}.jar" // <- GANTI JADI INI
 }
 
 build.dependsOn remapJar
