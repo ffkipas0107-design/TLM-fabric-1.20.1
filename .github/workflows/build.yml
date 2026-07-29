@@ -30,7 +30,7 @@ env:
 
 jobs:
   security-and-validation:
-    name: 🔒 Security & Wrapper Validation
+    name: Security & Wrapper Validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,44 +44,38 @@ jobs:
           ls -la
 
   build-project:
-    name: ⚙️ Build Mod (Java 21)
+    name: Build Mod Java 21
     needs: security-and-validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Java JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
-
       - uses: gradle/actions/setup-gradle@v3
-
-      - run: chmod +x./gradlew
-
+      - run: chmod +x ./gradlew
       - name: Clean Old Build
-        run:./gradlew clean # Biar gak ada sisa file corrupt
-
+        run: ./gradlew clean
       - name: Build Mod
         run: |
           if [ "${{ inputs.debug_mode }}" = "true" ]; then
-           ./gradlew build --stacktrace --info
+            ./gradlew build --stacktrace --info
           else
-           ./gradlew build
+            ./gradlew build
           fi
-
       - name: Upload Fabric Artifact
         uses: actions/upload-artifact@v4
         if: success()
         with:
           name: yes-steve-model-fabric-1.21.11
-          path: fabric/build/libs/*-fabric.jar # Pastiin ambil dari folder fabric
+          path: fabric/build/libs/*-fabric.jar
           if-no-files-found: error
           retention-days: 7
 
   release-deploy:
-    name: 📦 Auto Release
+    name: Auto Release
     needs: build-project
     if: startsWith(github.ref, 'refs/tags/v') || inputs.force_release == 'true'
     runs-on: ubuntu-latest
@@ -90,10 +84,10 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: yes-steve-model-fabric-1.21.11
-          path:./dist-release
+          path: ./dist-release
       - uses: softprops/action-gh-release@v2
         with:
-          files:./dist-release/*.jar
+          files: ./dist-release/*.jar
           generate_release_notes: true
           draft: ${{ inputs.force_release == 'true' }}
         env:
