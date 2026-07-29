@@ -1,7 +1,6 @@
 plugins {
-    // Menggunakan versi Architectury Loom resmi yang stabil untuk penanganan toolchain Java 21
-    id 'dev.architectury.loom' version '1.14-SNAPSHOT' apply false
-    id 'architectury-plugin' version '3.4-SNAPSHOT'
+    id 'dev.architectury.loom' version '1.14.8' apply false
+    id 'architectury-plugin' version '3.4.22'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
 
@@ -25,7 +24,6 @@ subprojects {
     }
 
     base {
-        // Penamaan suffix otomatis untuk output mod standar Gradle 9.x
         archivesName = "$rootProject.archives_name-$project.name"
     }
 
@@ -42,7 +40,7 @@ subprojects {
             url = "https://maven.fabricmc.net/"
         }
 
-        // Modrinth Maven (Diperbaiki ke URL API Maven yang valid)
+        // Modrinth Maven
         maven {
             name = "Modrinth"
             url = "https://api.modrinth.com/maven"
@@ -54,10 +52,31 @@ subprojects {
         // Architectury Maven
         maven {
             name = "Architectury"
-            url = "https://architectury.dev"
+            url = "https://maven.architectury.dev/"
             content {
                 includeGroup "dev.architectury"
             }
+        }
+
+        // Ladysnake Maven - URL BENER
+        maven {
+            name = "Ladysnake"
+            url = "https://maven.ladysnake.org/"
+        }
+
+        // TerraformersMC Maven
+        maven {
+            name = "TerraformersMC"
+            url = "https://maven.terraformersmc.com/"
+            content {
+                includeGroup "com.terraformersmc"
+            }
+        }
+
+        // Shedaniel Maven - BUAT MODMENU
+        maven {
+            name = "Shedaniel"
+            url = "https://maven.shedaniel.me/"
         }
 
         // Jalur Pustaka JitPack
@@ -65,45 +84,8 @@ subprojects {
             name = "JitPack"
             url = "https://jitpack.io"
             content {
-                includeGroup "com.github.OpenYSM"
                 includeGroup "com.github.TartaricAlkaline"
             }
-        }
-
-        // SpongePowered Maven
-        maven {
-            name = "Sponge"
-            url = "https://spongepowered.org"
-            content {
-                includeGroup "org.spongepowered"
-            }
-        }
-
-        // Ladysnake Maven (Cardinal Components)
-        maven {
-            name = "Ladysnake"
-            url = "https://ladysnake.org"
-        }
-
-        // TerraformersMC Maven (ModMenu)
-        maven {
-            name = "TerraformersMC"
-            url = "https://terraformersmc.com"
-            content {
-                includeGroup "com.terraformersmc"
-            }
-        }
-
-        // Mojang Libraries Maven
-        maven {
-            name = "Mojang"
-            url = "https://minecraft.net"
-        }
-
-        // NeoForged Maven
-        maven {
-            name = "NeoForged"
-            url = "https://neoforged.net"
         }
     }
 
@@ -117,14 +99,13 @@ subprojects {
     }
 
     tasks.withType(JavaCompile).configureEach {
-        it.options.failOnError = false
-        it.options.release = 21
-        it.options.compilerArgs.addAll([
+        options.encoding = 'UTF-8'
+        options.release = 21
+        options.compilerArgs.addAll([
                 '-Xlint:none',
                 '-Xlint:-deprecation',
                 '-Xlint:-removal',
-                '-Xlint:-unchecked',
-                '-nowarn'
+                '-Xlint:-unchecked'
         ])
     }
 
