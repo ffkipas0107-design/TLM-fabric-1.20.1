@@ -1,19 +1,5 @@
-plugins {
-    id 'dev.architectury.loom' version '1.14.8'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
-}
-
-group = rootProject.maven_group
-version = rootProject.mod_version
-
-repositories {
-    mavenCentral()
-    maven { url 'https://maven.terraformersmc.com/' }
-    maven { url 'https://maven.shedaniel.me/' }
-    maven { url 'https://jitpack.io' }
-    maven { url 'https://maven.ladysnake.org/' }
-    flatDir { dirs 'libs' } 
-}
+apply plugin: 'dev.architectury.loom'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 architectury {
     platformSetupLoomIde()
@@ -25,27 +11,36 @@ loom {
 }
 
 base {
-    archivesName = "yes-steve-model-fabric"
+    archivesName = "${rootProject.archives_name}-${project.name}"
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://maven.terraformersmc.com/' }
+    maven { url 'https://maven.shedaniel.me/' }
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://maven.ladysnake.org/' }
+    flatDir { dirs rootProject.file('libs') } 
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:$rootProject.minecraft_version"
+    minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
     mappings loom.officialMojangMappings()
 
-    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
 
-    // 3 LIBS DARI LIBS - SESUAI FOTO KAMU
+    // 3 LIBS DARI FOLDER LIBS
     modImplementation name: 'ForgeConfigAPIPort-v21.11.1-mc1.21.11-Fabric'
     modImplementation name: 'architectury-19.0.1-fabric'
     modImplementation name: 'geckolib-fabric-1.21.11-5.4.5'
 
     // 2 LIBS PAKAI LINK
-    modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-base:$rootProject.cardinal_components_version"
-    modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:$rootProject.cardinal_components_version"
+    modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-base:${rootProject.cardinal_components_version}"
+    modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:${rootProject.cardinal_components_version}"
     implementation 'com.github.TartaricAlkaline:ImageStream:1.0.0'
     
-    modCompileOnly "com.terraformersmc:modmenu:$rootProject.modmenu_version"
+    modCompileOnly "com.terraformersmc:modmenu:${rootProject.modmenu_version}"
     
     // DEPENDENSI KE COMMON
     modImplementation project(':common')
@@ -79,4 +74,5 @@ build.dependsOn remapJar
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    options.release = 21
 }
