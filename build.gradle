@@ -6,8 +6,9 @@ buildscript {
         maven { url 'https://maven.architectury.dev/' }
     }
     dependencies {
-        classpath 'dev.architectury:architectury-loom:1.7.143'
-        classpath 'dev.architectury:architectury-plugin:3.4.22'
+        // Menggunakan SNAPSHOT agar Gradle mencari versi terbaru yang kompatibel dengan 1.21.x
+        classpath 'dev.architectury:architectury-loom:1.7-SNAPSHOT'
+        classpath 'dev.architectury:architectury-plugin:3.4-SNAPSHOT'
         classpath 'com.github.johnrengelman:shadow:8.1.1'
     }
 }
@@ -17,6 +18,7 @@ apply plugin: 'architectury-plugin'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 architectury {
+    // Ini akan mengambil nilai 1.21.11 dari gradle.properties Anda
     minecraft = project.minecraft_version
 }
 
@@ -35,7 +37,7 @@ subprojects {
     }
 
     base {
-        archivesName = "$rootProject.archives_name-$project.name"
+        archivesName = "${rootProject.archives_name}-${project.name}"
     }
 
     repositories {
@@ -43,6 +45,8 @@ subprojects {
         flatDir { dirs rootProject.file('libs') }
         maven { url 'https://maven.fabricmc.net/' }
         maven { url 'https://maven.architectury.dev/' }
+        // Tambahkan ini jika mod YSM butuh library tambahan
+        maven { url 'https://jitpack.io' }
     }
 
     java {
