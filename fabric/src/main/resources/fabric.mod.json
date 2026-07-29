@@ -35,8 +35,8 @@
     "minecraft": "~1.21.11",
     "java": ">=21",
     "fabric-api": "*",
-    "architectury": ">=20.0.0",
-    "forgeconfigapiport": ">=21.1.0"
+    "architectury": ">=19.0.0",
+    "forgeconfigapiport": ">=20.2.0"
   },
   "suggests": {
     "modmenu": "*"
