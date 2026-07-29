@@ -7,7 +7,12 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 dependencies {
     // Wajib di Loom 1.13+ supaya :common bisa resolve class Minecraft & mappings
     minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
-    mappings loom.officialMojangMappings()
+    
+    // PERBAIKAN: Menggunakan sistem layered mappings agar Loom memproses
+    // mapping official Mojang dengan benar saat dikompilasi ke platform Fabric
+    mappings loom.layered() {
+        officialMojangMappings()
+    }
 
     // Fabric Loader hanya dipakai untuk anotasi @Environment.
     // JANGAN pakai class lain dari Fabric Loader di :common.
