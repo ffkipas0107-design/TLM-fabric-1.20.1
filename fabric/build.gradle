@@ -1,5 +1,5 @@
 plugins {
-    // Pada arsitektur Architectury Multiloader, plugin 'dev.architectury.loom' tidak boleh di-apply ulang secara manual dengan versi berbeda agar tidak bentrok
+    id 'dev.architectury.loom' version '1.14.8'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
@@ -8,9 +8,10 @@ version = rootProject.mod_version
 
 repositories {
     mavenCentral()
-    maven { url 'https://terraformersmc.com' }
-    maven { url 'https://shedaniel.me' }
+    maven { url 'https://maven.terraformersmc.com/' }
+    maven { url 'https://maven.shedaniel.me/' }
     maven { url 'https://jitpack.io' }
+    maven { url 'https://maven.ladysnake.org/' }
     flatDir { dirs 'libs' } 
 }
 
@@ -23,7 +24,6 @@ loom {
     splitEnvironmentSourceSets()
 }
 
-// Menggunakan format pemetaan Gradle 9.x komponen tunggal base
 base {
     archivesName = "yes-steve-model-fabric"
 }
@@ -35,19 +35,19 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
     modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
 
-    modImplementation "maven.modrinth:forge-config-api-port:${rootProject.forge_config_api_port_version}"
-    modImplementation("dev.architectury:architectury-fabric:${rootProject.architectury_api_version}") {
-        exclude group: "net.fabricmc.fabric-api", module: "fabric-api"
-    }
+    // 3 LIBS DARI LIBS - SESUAI FOTO KAMU
+    modImplementation name: 'ForgeConfigAPIPort-v21.11.1-mc1.21.11-Fabric'
+    modImplementation name: 'architectury-19.0.1-fabric'
+    modImplementation name: 'geckolib-fabric-1.21.11-5.4.5'
+
+    // 2 LIBS PAKAI LINK
     modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-base:$rootProject.cardinal_components_version"
     modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:$rootProject.cardinal_components_version"
-    implementation "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
+    implementation 'com.github.TartaricAlkaline:ImageStream:1.0.0'
+    
     modCompileOnly "com.terraformersmc:modmenu:$rootProject.modmenu_version"
     
-    modImplementation name: 'geckolib-fabric-1.21.11-5.4.5' 
-
-    // Dependensi kompilasi internal
-    compileOnly project(path: ':common', configuration: 'namedElements')
+    // DEPENDENSI KE COMMON
     modImplementation project(':common')
 }
 
