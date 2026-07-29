@@ -16,7 +16,6 @@ configurations {
     runtimeClasspath.extendsFrom common
     developmentFabric.extendsFrom common
 
-    // Files in this configuration will be bundled into your mod using the Shadow plugin.
     shadowBundle {
         canBeResolved = true
         canBeConsumed = false
@@ -24,40 +23,36 @@ configurations {
 }
 
 dependencies {
-    // PERBAIKAN UTAMA: Wajib deklarasikan pustaka Minecraft dan Mappings resmi di sini
-    // Langkah ini mutlak agar sistem Loom 1.14-SNAPSHOT tahu cara melakukan remap ke intermediary
     minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
     mappings loom.officialMojangMappings()
 
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
 
-    // Memuat modul Fabric API yang dibutuhkan secara spesifik untuk 1.21.11
     modImplementation fabricApi.module("fabric-networking-api-v1",     rootProject.fabric_api_version)
     modImplementation fabricApi.module("fabric-lifecycle-events-v1",   rootProject.fabric_api_version)
     modImplementation fabricApi.module("fabric-rendering-v1",          rootProject.fabric_api_version)
     modImplementation fabricApi.module("fabric-sound-api-v1",          rootProject.fabric_api_version)
 
-    modImplementation "maven.modrinth:forge-config-api-port:$rootProject.forge_config_api_port_version"
+    // TURUNIN VERSI BIAR COCOK SAMA MODS KAMU
+    modImplementation "maven.modrinth:forge-config-api-port:20.2.6+1.21.11"
+    include        "maven.modrinth:forge-config-api-port:20.2.6+1.21.11"
 
-    modImplementation("dev.architectury:architectury-fabric:$rootProject.architectury_api_version") {
+    // TURUNIN VERSI BIAR COCOK SAMA MODS KAMU
+    modImplementation("dev.architectury:architectury-fabric:19.0.1+1.21.11") {
         exclude group: "net.fabricmc.fabric-api", module: "fabric-api"
     }
-    include "dev.architectury:architectury-fabric:$rootProject.architectury_api_version"
-    include "maven.modrinth:forge-config-api-port:$rootProject.forge_config_api_port_version"
+    include "dev.architectury:architectury-fabric:19.0.1+1.21.11"
 
-    // Dependensi Cardinal Components API (v7 series untuk 1.21.11)
     modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-base:$rootProject.cardinal_components_version"
     modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:$rootProject.cardinal_components_version"
     include            "org.ladysnake.cardinal-components-api:cardinal-components-base:$rootProject.cardinal_components_version"
     include            "org.ladysnake.cardinal-components-api:cardinal-components-entity:$rootProject.cardinal_components_version"
 
-    // ImageStream Dependensi kustom pendukung
     implementation "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
     include        "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
 
     modCompileOnly "com.terraformersmc:modmenu:$rootProject.modmenu_version"
 
-    // Menghubungkan platform :fabric dengan basis kode utama di subproyek :common
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
 }
@@ -74,7 +69,6 @@ processResources {
 }
 
 shadowJar {
-    // SINKRONISASI: Menggunakan 'shadowBundle' sesuai deklarasi di blok configurations atas
     configurations = [project.configurations.shadowBundle]
     archiveClassifier = 'dev-shadow'
 }
