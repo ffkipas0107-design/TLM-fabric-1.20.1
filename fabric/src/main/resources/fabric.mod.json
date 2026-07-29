@@ -14,16 +14,16 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.yesstevemodel.fabric.YesSteveModelFabric"
+      "com.elfmcys.yesstevemodel.fabric.YesSteveModelFabric"
     ],
     "client": [
-      "com.yesstevemodel.fabric.client.YesSteveModelFabricClient"
+      "com.elfmcys.yesstevemodel.fabric.client.YesSteveModelFabricClient"
     ],
     "modmenu": [
-      "com.yesstevemodel.fabric.compat.ModMenuConfigScreenProvider"
+      "com.elfmcys.yesstevemodel.fabric.compat.ModMenuConfigScreenProvider"
     ],
     "cardinal-components-entity": [
-      "com.yesstevemodel.fabric.YsmComponents"
+      "com.elfmcys.yesstevemodel.fabric.YsmComponents"
     ]
   },
   "mixins": [
