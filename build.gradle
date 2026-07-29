@@ -6,7 +6,7 @@ buildscript {
         maven { url 'https://maven.architectury.dev/' }
     }
     dependencies {
-        classpath 'dev.architectury:architectury-loom:1.14.8'
+        classpath 'dev.architectury:architectury-loom:1.7.143' // <- INI BUAT 1.21.1+ 
         classpath 'dev.architectury:architectury-plugin:3.4.22'
         classpath 'com.github.johnrengelman:shadow:8.1.1'
     }
