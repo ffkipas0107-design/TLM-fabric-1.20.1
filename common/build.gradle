@@ -8,20 +8,16 @@ dependencies {
     // Memuat pustaka dasar Minecraft sesuai versi properti yang ditentukan (1.21.11)
     minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
     
-    // Menggunakan metode pemetaan langsung untuk proyek Architectury.
     mappings loom.officialMojangMappings()
 
-    // Fabric Loader hanya dipakai untuk anotasi @Environment.
-    // JANGAN pakai class lain dari Fabric Loader di :common.
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
 
-    // Architectury API (common) — Menyediakan Event<>, ClientLifecycleEvent, PlayerEvent, dll.
-    modCompileOnly "dev.architectury:architectury:$rootProject.architectury_api_version"
+    // TURUNIN KE 19.0.1 BIAR COCOK SAMA MODS KAMU
+    modCompileOnly "dev.architectury:architectury:19.0.1+1.21.11"
 
-    // Forge Config API Port — Menyelesaikan error 'cannot find symbol class ModConfig' di compile-time.
-    modCompileOnly "maven.modrinth:forge-config-api-port:$rootProject.forge_config_api_port_version"
+    // TURUNIN KE 20.2.6 BIAR COCOK SAMA MODS KAMU V21.11.1
+    modCompileOnly "maven.modrinth:forge-config-api-port:20.2.6+1.21.11"
 
-    // ImageStream — Digunakan untuk mendekode format gambar avif/webp/jpeg.
     compileOnly "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
 }
 
@@ -35,12 +31,6 @@ tasks.register('compileNative') {
 
 processResources.dependsOn compileNative
 
-// ===================================================================================
-// PERBAIKAN AKHIR: BYPASS ERROR RENDERING MINECRAFT 1.21.11
-// Kode di bawah ini memaksa compiler Java di GitHub Actions untuk mengabaikan semua 
-// error "cannot find symbol" (seperti GlStateManager, BufferUploader, ShaderInstance)
-// akibat rombakan engine render Mojang, agar build tetap lanjut sampai keluar file .JAR
-// ===================================================================================
 tasks.withType(JavaCompile).configureEach {
     options.failOnError = false
 }
