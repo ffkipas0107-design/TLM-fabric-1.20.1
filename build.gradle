@@ -42,10 +42,10 @@ subprojects {
             url = "https://maven.fabricmc.net/"
         }
 
-        // Modrinth Maven
+        // Modrinth Maven (Diperbaiki ke URL API Maven yang valid)
         maven {
             name = "Modrinth"
-            url = "https://modrinth.com"
+            url = "https://api.modrinth.com/maven"
             content {
                 includeGroup "maven.modrinth"
             }
