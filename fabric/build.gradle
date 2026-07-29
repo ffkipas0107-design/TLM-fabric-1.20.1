@@ -1,6 +1,16 @@
 plugins {
+    id 'fabric-loom' version '1.11.7'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id 'dev.architectury.loom' version '1.11.7'
+}
+
+group = rootProject.maven_group
+version = rootProject.mod_version
+
+repositories {
+    mavenCentral()
+    maven { url 'https://maven.terraformersmc.com' }
+    maven { url 'https://maven.shedaniel.me' }
+    maven { url 'https://jitpack.io' }
 }
 
 architectury {
@@ -8,18 +18,12 @@ architectury {
     fabric()
 }
 
-configurations {
-    common {
-        canBeResolved = true
-        canBeConsumed = false
-    }
-    compileClasspath.extendsFrom common
-    runtimeClasspath.extendsFrom common
-    developmentFabric.extendsFrom common
-
-    shadowBundle {
-        canBeResolved = true
-        canBeConsumed = false
+loom {
+    splitEnvironmentSourceSets()
+    mods {
+        "yes-steve-model-fabric" {
+            sourceSet sourceSets.main
+        }
     }
 }
 
@@ -28,60 +32,55 @@ dependencies {
     mappings loom.officialMojangMappings()
 
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
 
-    modImplementation fabricApi.module("fabric-networking-api-v1",     rootProject.fabric_api_version)
-    modImplementation fabricApi.module("fabric-lifecycle-events-v1",   rootProject.fabric_api_version)
-    modImplementation fabricApi.module("fabric-rendering-v1",          rootProject.fabric_api_version)
-    modImplementation fabricApi.module("fabric-sound-api-v1",          rootProject.fabric_api_version)
-
+    // LIBRARY
     modImplementation "maven.modrinth:forge-config-api-port:${rootProject.forge_config_api_port_version}"
-    include        "maven.modrinth:forge-config-api-port:${rootProject.forge_config_api_port_version}"
-
     modImplementation("dev.architectury:architectury-fabric:${rootProject.architectury_api_version}") {
         exclude group: "net.fabricmc.fabric-api", module: "fabric-api"
     }
-    include "dev.architectury:architectury-fabric:${rootProject.architectury_api_version}"
-
     modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-base:$rootProject.cardinal_components_version"
     modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:$rootProject.cardinal_components_version"
-    include            "org.ladysnake.cardinal-components-api:cardinal-components-base:$rootProject.cardinal_components_version"
-    include            "org.ladysnake.cardinal-components-api:cardinal-components-entity:$rootProject.cardinal_components_version"
-
     implementation "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
-    include        "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
-
     modCompileOnly "com.terraformersmc:modmenu:$rootProject.modmenu_version"
 
-    // YANG INI PALING PENTING SAYANG
-    implementation project(':common')
-    shadowBundle project(':common')
+    // INI PALING PENTING: AMBIL COMMON
+    modImplementation project(':common')
+    include project(':common') // biar ke-include ke jar
 }
 
-// BIAR SEMUA LIBRARY DI-INCLUDE KE SHADOW
-configurations.shadowBundle.extendsFrom(configurations.include)
-
+// GABUNGIN RESOURCE DARI COMMON
 processResources {
     inputs.property 'version', project.version
-
     filesMatching('fabric.mod.json') {
         expand version: project.version
     }
-
-    from(project(':common').sourceSets.main.resources)
+    from(project(':common').sourceSets.main.resources.srcDirs) {
+        include '**/*.json'
+        include '**/*.png'
+        include '**/*.mixins.json'
+    }
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
+// SHADOW CONFIG - INI KUNCINYA
 shadowJar {
-    configurations = [project.configurations.shadowBundle]
-    archiveClassifier = 'dev-shadow'
-    mergeServiceFiles() // WAJIB BIAR MIXINS.JSON KE-MERGE
+    configurations = [project.configurations.runtimeClasspath]
+    archiveClassifier = ''
+    mergeServiceFiles() // biar mixin.json ke merge
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
 }
 
+// REMAP JAR SETELAH DI SHADOW
 remapJar {
     input.set shadowJar.archiveFile
+    dependsOn shadowJar
     archiveFileName = "yes-steve-model-${project.version}-fabric-${rootProject.minecraft_version}.jar"
 }
 
-loom {
-    splitEnvironmentSourceSets()
+// BIAR TASK BUILD LANGSUNG HASILIN REMAPJAR
+build.dependsOn remapJar
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }
