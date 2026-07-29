@@ -12,11 +12,11 @@ dependencies {
 
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
 
-    // TURUNIN KE 19.0.1 BIAR COCOK SAMA MODS KAMU
-    modCompileOnly "dev.architectury:architectury:19.0.1"
+    // UDAH DIUBAH AMBIL DARI gradle.properties
+    modCompileOnly "dev.architectury:architectury:${rootProject.architectury_api_version}"
 
-    // TURUNIN KE 20.2.6 BIAR COCOK SAMA MODS KAMU V21.11.1
-    modCompileOnly "maven.modrinth:forge-config-api-port:20.2.6"
+    // UDAH DIUBAH AMBIL DARI gradle.properties 
+    modCompileOnly "maven.modrinth:forge-config-api-port:${rootProject.forge_config_api_port_version}"
 
     compileOnly "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
 }
