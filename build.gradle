@@ -3,10 +3,10 @@ buildscript {
         mavenCentral()
         gradlePluginPortal()
         maven { url 'https://maven.fabricmc.net/' }
-        maven { url 'https://maven.architectury.dev/' }
+        maven { url 'https://maven.architectury.dev/' } // <- INI PENTING
     }
     dependencies {
-        classpath 'dev.architectury:architectury-loom:1.7.143' // <- INI BUAT 1.21.1+ 
+        classpath 'dev.architectury:architectury-loom:1.7.143'
         classpath 'dev.architectury:architectury-plugin:3.4.22'
         classpath 'com.github.johnrengelman:shadow:8.1.1'
     }
@@ -16,9 +16,7 @@ apply plugin: 'dev.architectury.loom'
 apply plugin: 'architectury-plugin'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-architectury {
-    minecraft = project.minecraft_version
-}
+architectury { minecraft = project.minecraft_version }
 
 allprojects {
     group = rootProject.maven_group
@@ -34,19 +32,13 @@ subprojects {
         evaluationDependsOn(':common')
     }
 
-    base {
-        archivesName = "$rootProject.archives_name-$project.name"
-    }
+    base { archivesName = "$rootProject.archives_name-$project.name" }
 
     repositories {
         mavenCentral()
         flatDir { dirs rootProject.file('libs') }
         maven { url 'https://maven.fabricmc.net/' }
         maven { url 'https://maven.architectury.dev/' }
-        maven { url 'https://maven.ladysnake.org/' }
-        maven { url 'https://maven.terraformersmc.com/' }
-        maven { url 'https://maven.shedaniel.me/' }
-        maven { url 'https://jitpack.io' }
     }
 
     java {
@@ -58,16 +50,5 @@ subprojects {
     tasks.withType(JavaCompile).configureEach {
         options.encoding = 'UTF-8'
         options.release = 21
-    }
-
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                artifactId = base.archivesName.get()
-                from components.java
-            }
-        }
-        repositories {
-        }
     }
 }
