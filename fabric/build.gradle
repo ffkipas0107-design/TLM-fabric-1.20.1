@@ -20,11 +20,6 @@ architectury {
 
 loom {
     splitEnvironmentSourceSets()
-    mods {
-        "yes-steve-model-fabric" {
-            sourceSet sourceSets.main
-        }
-    }
 }
 
 dependencies {
@@ -44,30 +39,26 @@ dependencies {
     implementation "com.github.TartaricAlkaline:ImageStream:-SNAPSHOT"
     modCompileOnly "com.terraformersmc:modmenu:$rootProject.modmenu_version"
 
-    // INI PALING PENTING: AMBIL COMMON
+    // AMBIL KODE DARI COMMON DOANG
     modImplementation project(':common')
-    include project(':common') // biar ke-include ke jar
 }
 
-// GABUNGIN RESOURCE DARI COMMON
+// GABUNGIN RESOURCE DARI COMMON TAPI JANGAN MIXINS.JSON
 processResources {
     inputs.property 'version', project.version
-    filesMatching('fabric.mod.json') {
-        expand version: project.version
-    }
+    filesMatching('*.mixins.json') { expand version: project.version }
     from(project(':common').sourceSets.main.resources.srcDirs) {
-        include '**/*.json'
-        include '**/*.png'
-        include '**/*.mixins.json'
+        exclude '**/*.mixins.json' // PENTING: JANGAN COPY MIXINS DARI COMMON
+        exclude 'fabric.mod.json'
     }
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-// SHADOW CONFIG - INI KUNCINYA
+// SHADOW CONFIG
 shadowJar {
     configurations = [project.configurations.runtimeClasspath]
     archiveClassifier = ''
-    mergeServiceFiles() // biar mixin.json ke merge
+    mergeServiceFiles()
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
 }
 
@@ -78,7 +69,6 @@ remapJar {
     archiveFileName = "yes-steve-model-${project.version}-fabric-${rootProject.minecraft_version}.jar"
 }
 
-// BIAR TASK BUILD LANGSUNG HASILIN REMAPJAR
 build.dependsOn remapJar
 
 tasks.withType(JavaCompile).configureEach {
